@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"buyacar.com.co/omnicanal/internal/channel"
+	"buyacar.com.co/omnicanal/internal/crm"
 	"buyacar.com.co/omnicanal/internal/escalate"
 	"buyacar.com.co/omnicanal/internal/guard"
 )
@@ -71,6 +72,11 @@ type DashboardHandler struct {
 
 	// Gancho opcional para el puente oficial con n8n (POST /api/n8n/webhook)
 	onN8NWebhook func(ctx context.Context, req CopilotRequest) (map[string]interface{}, error)
+
+	// Almacén de perfiles CRM y autenticación de acceso al panel
+	leadStore    *crm.MemoryLeadStore
+	crmManager   crm.Manager
+	adminAuthKey string
 }
 
 // CopilotRequest representa una consulta entrante de Facebook Marketplace / Messenger para el Copiloto.
@@ -134,6 +140,15 @@ func NewDashboardHandler(
 	}
 
 	return dh
+}
+
+// SetCRMManagers enlaza los componentes del CRM y la clave de autenticación segura.
+func (dh *DashboardHandler) SetCRMManagers(mgr crm.Manager, store *crm.MemoryLeadStore, authKey string) {
+	dh.mu.Lock()
+	defer dh.mu.Unlock()
+	dh.crmManager = mgr
+	dh.leadStore = store
+	dh.adminAuthKey = strings.TrimSpace(authKey)
 }
 
 // SetOnDraftApprove configura un callback ejecutado cuando un borrador es aprobado.
@@ -314,6 +329,12 @@ func (dh *DashboardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		dh.handleGeminiConfig(w, r)
 	case path == "/api/n8n/webhook":
 		dh.handleN8NWebhook(w, r)
+	case path == "/api/crm/leads":
+		dh.handleCRMLeads(w, r)
+	case path == "/api/crm/lead/decision":
+		dh.handleCRMDecision(w, r)
+	case path == "/api/crm/login":
+		dh.handleCRMLogin(w, r)
 	default:
 		// Intentar servir desde embed.FS
 		trimmed := strings.TrimPrefix(path, "/")
@@ -759,6 +780,150 @@ func (dh *DashboardHandler) handleWebhookSimulate(w http.ResponseWriter, r *http
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	_ = json.NewEncoder(w).Encode(res)
+}
+
+func (dh *DashboardHandler) handleCRMLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var body struct {
+		Password string `json:"password"`
+	}
+	_ = json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&body)
+
+	dh.mu.RLock()
+	expected := dh.adminAuthKey
+	dh.mu.RUnlock()
+
+	// Si no se configuró clave, por defecto permite acceso o exige buyacar2026
+	if expected == "" {
+		expected = "buyacar2026"
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if strings.TrimSpace(body.Password) == expected {
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"authenticated": true,
+			"token":         fmt.Sprintf("byc_sess_%d", time.Now().UnixNano()),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusUnauthorized)
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"authenticated": false,
+		"error":         "credencial incorrecta",
+	})
+}
+
+func (dh *DashboardHandler) handleCRMLeads(w http.ResponseWriter, r *http.Request) {
+	dh.mu.RLock()
+	ls := dh.leadStore
+	dh.mu.RUnlock()
+
+	leadsList := make([]crm.LeadProfile, 0)
+	if ls != nil {
+		// Mock o perfiles reales
+		ls.UpsertLead(r.Context(), crm.LeadProfile{
+			CustomerID:      "lead-mkt-01",
+			CustomerAlias:   "Carlos Mendoza (Tunja)",
+			ChannelID:       "facebook_marketplace",
+			IntentScore:     88,
+			Stage:           crm.StageAppointment,
+			TargetVehicle:   "Toyota Fortuner 2024",
+			BudgetCOP:       233000000,
+			PaymentMethod:   "credito",
+			NeedsFinancing:  true,
+			AppointmentSede: "Av. Oriental - Cra. 6 #52-23 (Frente a la Toyota)",
+			LastInteraction: time.Now().UTC(),
+		})
+		ls.UpsertLead(r.Context(), crm.LeadProfile{
+			CustomerID:      "lead-wa-02",
+			CustomerAlias:   "Mariana Silva (Duitama)",
+			ChannelID:       "whatsapp",
+			IntentScore:     65,
+			Stage:           crm.StageQualified,
+			TargetVehicle:   "Nissan Kicks 2020",
+			BudgetCOP:       72000000,
+			PaymentMethod:   "contado",
+			LastInteraction: time.Now().UTC().Add(-15 * time.Minute),
+		})
+		ls.UpsertLead(r.Context(), crm.LeadProfile{
+			CustomerID:      "lead-mkt-03",
+			CustomerAlias:   "Juan Carlos Pérez (Sogamoso)",
+			ChannelID:       "facebook_marketplace",
+			IntentScore:     92,
+			Stage:           crm.StageNegotiation,
+			TargetVehicle:   "Renault Captur 2022",
+			BudgetCOP:       75900000,
+			PaymentMethod:   "permuta",
+			HasTradeIn:      true,
+			LastInteraction: time.Now().UTC().Add(-5 * time.Minute),
+		})
+
+		if l1, ok := ls.GetLead(r.Context(), "lead-mkt-01"); ok {
+			leadsList = append(leadsList, l1)
+		}
+		if l2, ok := ls.GetLead(r.Context(), "lead-wa-02"); ok {
+			leadsList = append(leadsList, l2)
+		}
+		if l3, ok := ls.GetLead(r.Context(), "lead-mkt-03"); ok {
+			leadsList = append(leadsList, l3)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(leadsList)
+}
+
+func (dh *DashboardHandler) handleCRMDecision(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var body struct {
+		CustomerID string `json:"customer_id"`
+		Decision   string `json:"decision"` // "agendar_cita", "aprobar_descuento", "asignar_asesor", "cerrar_reserva"
+		Note       string `json:"note"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&body); err != nil {
+		http.Error(w, "invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	dh.mu.RLock()
+	ls := dh.leadStore
+	dh.mu.RUnlock()
+
+	var updated crm.LeadProfile
+	if ls != nil {
+		lead, exists := ls.GetLead(r.Context(), body.CustomerID)
+		if exists {
+			switch body.Decision {
+			case "agendar_cita":
+				lead.Stage = crm.StageAppointment
+				lead.AppointmentSede = "Av. Oriental - Cra. 6 #52-23, frente a la Toyota, Tunja"
+				t := time.Now().Add(24 * time.Hour)
+				lead.AppointmentTime = &t
+			case "aprobar_descuento", "asignar_asesor":
+				lead.Stage = crm.StageNegotiation
+			case "cerrar_reserva":
+				lead.Stage = crm.StageClosedWon
+			}
+			if body.Note != "" {
+				lead.Notes = append(lead.Notes, body.Note)
+			}
+			updated = ls.UpsertLead(r.Context(), lead)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "decision_applied",
+		"customer_id": body.CustomerID,
+		"decision":    body.Decision,
+		"new_stage":   updated.Stage,
+	})
 }
 
 func (dh *DashboardHandler) handleMetaSandboxSend(w http.ResponseWriter, r *http.Request) {

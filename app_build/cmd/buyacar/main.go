@@ -213,6 +213,13 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 	metricsExporter := server.NewMetricsExporter(obsCollector, escQ, resTracker, rateCtrl, string(cfg.OperatingMode), activeChannels)
 	dashboardHandler := server.NewDashboardHandler(escQ, resTracker, rateCtrl, metricsExporter, string(cfg.OperatingMode), activeChannels)
 
+	leadStore := crm.NewMemoryLeadStore()
+	adminSecret := os.Getenv("BUYACAR_ADMIN_PASSWORD")
+	if adminSecret == "" {
+		adminSecret = "buyacar2026"
+	}
+	dashboardHandler.SetCRMManagers(crmMgr, leadStore, adminSecret)
+
 	var lastWebhookMu sync.Mutex
 	var lastWebhookOutcome core.PipelineOutcome
 

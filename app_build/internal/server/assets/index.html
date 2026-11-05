@@ -315,6 +315,31 @@
       </details>
     </div>
 
+    <!-- CRM Lead Management & Sales Decisions -->
+    <div class="card" style="margin-bottom: 28px; border-color: #10b981;">
+      <div class="section-title">
+        <span>💼 Centro de Decisiones Comerciales CRM &mdash; Embudo Predictivo (Tunja)</span>
+        <button onclick="loadCRMLeads()" class="btn btn-outline">Refrescar Prospectos</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-crm-leads">
+          <thead>
+            <tr>
+              <th>Cliente / Origen</th>
+              <th>Vehículo de Interés</th>
+              <th>Presupuesto</th>
+              <th>Intent Score</th>
+              <th>Etapa Embudo</th>
+              <th>Acción / Decisión Comercial</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-crm-leads">
+            <tr><td colspan="6" class="empty-msg">Cargando prospectos calificados...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Escalate Queue Review -->
     <div class="card" style="margin-bottom: 28px;">
       <div class="section-title">
@@ -705,9 +730,76 @@
       }
     }
 
+    async function loadCRMLeads() {
+      try {
+        const res = await fetch('/api/crm/leads');
+        if (!res.ok) return;
+        const leads = await res.json();
+        const tbody = document.getElementById('tbody-crm-leads');
+        if (leads && leads.length > 0) {
+          tbody.innerHTML = leads.map(l => `
+            <tr>
+              <td>
+                <strong>${l.customer_alias}</strong><br>
+                <small style="color:var(--text-muted);">${l.channel_id}</small>
+              </td>
+              <td>${l.target_vehicle || 'Consulta General'}</td>
+              <td>${l.budget_cop ? '$' + Number(l.budget_cop).toLocaleString('es-CO') + ' COP' : 'A consultar'}</td>
+              <td>
+                <span class="badge" style="background:${l.intent_score >= 80 ? '#16a34a' : (l.intent_score >= 50 ? '#2563eb' : '#eab308')};color:#fff;">
+                  ${l.intent_score} / 100
+                </span>
+              </td>
+              <td><code>${l.stage}</code></td>
+              <td>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button onclick="applyDecision('${l.customer_id}', 'agendar_cita')" class="btn btn-approve" title="Agendar prueba de ruta física en Tunja">
+                    🚗 Agendar Cita
+                  </button>
+                  <button onclick="applyDecision('${l.customer_id}', 'aprobar_descuento')" class="btn btn-unpause" title="Pasar a negociación personalizada">
+                    💬 Asignar Asesor
+                  </button>
+                  <button onclick="applyDecision('${l.customer_id}', 'cerrar_reserva')" class="btn btn-outline" style="border-color:#10b981;color:#10b981;" title="Marcar separado con abono de 2M">
+                    🔒 Reservar ($2M)
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No hay prospectos en seguimiento activo</td></tr>';
+        }
+      } catch (err) {
+        console.error('Error cargando leads CRM:', err);
+      }
+    }
+
+    async function applyDecision(customerId, decision) {
+      try {
+        const res = await fetch('/api/crm/lead/decision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customer_id: customerId, decision: decision })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`Decisión '${decision}' aplicada con éxito al cliente ${customerId}`);
+          loadCRMLeads();
+        } else {
+          showToast('Error aplicando decisión comercial: ' + res.statusText);
+        }
+      } catch (err) {
+        showToast('Error de red: ' + err.message);
+      }
+    }
+
     // Auto-refresh every 5 seconds
     setInterval(refreshData, 5000);
-    window.addEventListener('DOMContentLoaded', refreshData);
+    setInterval(loadCRMLeads, 8000);
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshData();
+      loadCRMLeads();
+    });
   </script>
 </body>
 </html>
