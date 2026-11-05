@@ -534,9 +534,13 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 
 	// 7. Modo --server: arrancar servidor web embebido y bloquear hasta señal de apagado
 	if *serverFlag {
+		host := "127.0.0.1"
+		if os.Getenv("RAILWAY_ENVIRONMENT") != "" || os.Getenv("HOST") != "" || os.Getenv("PORT") != "" {
+			host = "0.0.0.0"
+		}
 		srvCfg := server.Config{
 			Port:            *portFlag,
-			Host:            "127.0.0.1",
+			Host:            host,
 			OperatingMode:   string(cfg.OperatingMode),
 			EnableDashboard: true,
 			EnableMetrics:   true,
