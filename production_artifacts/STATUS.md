@@ -1,7 +1,7 @@
 # Estado del workspace — BuyaCAR Omnicanal Control Plane & Motor RAG
 
-- **Modo Operativo**: `SIMULATION` (Inmutable por defecto en `core.DefaultSafeConfig()`; conmutable a `DRAFT` únicamente mediante variable de entorno explícita `BUYACAR_OPERATING_MODE=DRAFT`).
-- **Estado**: `RAG_ARCHITECTURE_VERIFIED_AND_CONSOLIDATED` (Motor RAG local híbrido BM25/Cosine integrado en CP4, fixtures Boyacá/Tunja y 100% tests en verde).
+- **Modo Operativo**: `DRAFT` (Transición controlada iniciada; sincronización de inventario real activa `BUYACAR_LIVE_INVENTORY_SYNC=1`, generación de borradores con supervisión humana y cero envíos automáticos no supervisados).
+- **Estado**: `DRAFT_MODE_ACTIVE_AND_VERIFIED` (Diagnóstico de salud verificado en vivo con `inventory_live_synced: true`, `active_mode: DRAFT` y métricas operacionales).
 - **Gobernanza y Saneamiento Anti-Vibecoding**:
   - **Motor RAG Local Híbrido (`internal/rag/`)**: Implementado en Go 1.23 estándar sin dependencias externas. Búsqueda combinada BM25 léxica y similitud coseno vectorial con conmutación transparente a Ollama (`nomic-embed-text`) en `127.0.0.1`. Latencia p99 medida: **251 µs**.
   - **Fixtures de Conocimiento Embebidos (`fixtures/rag/`)**: Catálogo vehicular, políticas de garantía, requisitos de crédito para Boyacá/Tunja y FAQs servidos nativamente vía `embed.FS`.
