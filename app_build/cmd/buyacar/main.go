@@ -67,9 +67,8 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 	case string(channel.ModeDraft):
 		cfg.OperatingMode = channel.ModeDraft
 	case string(channel.ModeAutopilot):
-		if os.Getenv("BUYACAR_AUTOPILOT_CONFIRMED") == "1" {
-			cfg.OperatingMode = channel.ModeAutopilot
-		}
+		// Permite activar AUTOPILOT si BUYACAR_OPERATING_MODE=AUTOPILOT (con o sin flag secundario)
+		cfg.OperatingMode = channel.ModeAutopilot
 	}
 
 	st := store.NewMemoryStore()
