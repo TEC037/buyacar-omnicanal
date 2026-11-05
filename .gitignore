@@ -5,3 +5,6 @@
 *.sqlite
 coverage.out
 app_build/bin/
+app_build/cmd/production_artifacts/
+production_artifacts/traces/*.json
+production_artifacts/traces/
