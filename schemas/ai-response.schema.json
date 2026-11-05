@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["config_id", "trace", "proposed_reply", "intent", "confidence", "conversation_summary", "crm_update", "governance"],
+  "properties": {
+    "config_id": {"type": "string"},
+    "trace": {"type": "object", "additionalProperties": false, "required": ["timestamp_utc", "request_id"], "properties": {"timestamp_utc": {"type": "string", "format": "date-time"}, "request_id": {"type": "string"}}},
+    "proposed_reply": {"type": "string"},
+    "intent": {"type": "string"},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "conversation_summary": {"type": "string"},
+    "crm_update": {"type": "object", "additionalProperties": false, "required": ["tasks_to_create"], "properties": {"tasks_to_create": {"type": "array", "items": {"type": "string"}}}},
+    "governance": {"type": "object", "additionalProperties": false, "required": ["escalate", "reason"], "properties": {"escalate": {"type": "boolean"}, "reason": {"type": ["string", "null"]}}}
+  }
+}

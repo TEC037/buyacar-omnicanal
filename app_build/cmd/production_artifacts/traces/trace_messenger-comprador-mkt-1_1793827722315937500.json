@@ -1,0 +1,50 @@
+{
+  "conversation_id": "messenger-comprador-mkt-1",
+  "channel_id": "messenger",
+  "operating_mode": "AUTOPILOT",
+  "checkpoints": [
+    {
+      "name": "lectura",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:28:42.314543Z"
+    },
+    {
+      "name": "triage",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:28:42.314544Z"
+    },
+    {
+      "name": "inventario",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:28:42.314545Z"
+    },
+    {
+      "name": "respuesta",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:28:42.314546Z"
+    },
+    {
+      "name": "guard",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:28:42.314547Z"
+    },
+    {
+      "name": "envio",
+      "status": "ok",
+      "duration_ms": 0.762,
+      "timestamp_utc": "2026-11-04T21:28:42.3153052Z"
+    },
+    {
+      "name": "crm",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:28:42.3153062Z"
+    }
+  ],
+  "total_duration_ms": 0.762
+}

@@ -1,0 +1,19 @@
+{
+  "cycle_id": "cycle-N",
+  "timestamp_utc": "2026-01-01T00:00:00Z",
+  "hypothesis": "Si hacemos X, Y mejorará de A a B sin romper C.",
+  "primary_metric": {"name": "", "baseline": null, "target": null, "observed": null, "status": "not_measured"},
+  "dimensions": {
+    "correctness": {"score": 0, "status": "not_measured", "evidence": []},
+    "security": {"score": 0, "status": "not_measured", "evidence": []},
+    "latency": {"score": 0, "status": "not_measured", "evidence": []},
+    "cost": {"score": 0, "status": "not_measured", "evidence": []},
+    "operability": {"score": 0, "status": "not_measured", "evidence": []},
+    "scope": {"score": 0, "status": "not_measured", "evidence": []}
+  },
+  "trace_summary": {"checkpoints_ok": 0, "checkpoints_failed": 0, "pii_redactions": 0},
+  "decision": "stop",
+  "rollback_criterion": "",
+  "next_single_improvement": "",
+  "blockers": []
+}

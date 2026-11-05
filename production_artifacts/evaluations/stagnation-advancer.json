@@ -1,0 +1,42 @@
+{
+  "evaluated_at_utc": "2026-10-29T02:19:11Z",
+  "stagnation_detected": false,
+  "no_progress_runs_count": 0,
+  "draft_conversations_so_far": 100,
+  "draft_conversations_goal": 100,
+  "action_summary": "increment_completed:inc-01-draft-batch-100-simulator",
+  "backlog": [
+    {
+      "id": "inc-01-draft-batch-100-simulator",
+      "title": "Arnés verificador de lote de 100 conversaciones variadas en modo DRAFT para ejercitar EvaluateDraftExitGate",
+      "stage_target": "STAGE_B_EXIT_GATE",
+      "package_path": "internal/core",
+      "state": "completed",
+      "completed_at": "2026-10-29T02:19:11Z"
+    },
+    {
+      "id": "inc-02-pre-send-revalidator",
+      "title": "Revalidador pre-envío de disponibilidad fresca de inventario y sellado CRM (Paso 11 de instructivo.md)",
+      "stage_target": "STAGE_C_PREREQUISITE",
+      "package_path": "internal/core",
+      "state": "completed",
+      "completed_at": "2026-10-29T03:11:39Z"
+    },
+    {
+      "id": "inc-03-rate-limiter-human-jitter",
+      "title": "Controlador determinista de cuotas (120/h, 250/día) y pausas humanas con jitter (3200ms/2500ms ±30%)",
+      "stage_target": "STAGE_C_PREREQUISITE",
+      "package_path": "internal/channel",
+      "state": "completed",
+      "completed_at": "2026-10-29T03:35:53Z"
+    },
+    {
+      "id": "inc-04-dom-selector-guard",
+      "title": "Verificador de selectores versionados y pausa automática ante rotura de DOM (Regla 30-channels.md)",
+      "stage_target": "STAGE_C_PREREQUISITE",
+      "package_path": "internal/channel",
+      "state": "completed",
+      "completed_at": "2026-10-29T03:52:59Z"
+    }
+  ]
+}

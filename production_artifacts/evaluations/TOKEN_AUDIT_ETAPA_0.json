@@ -1,0 +1,16 @@
+{
+  "cycle_id": "etapa-00-discovery",
+  "input_tokens": 4200,
+  "output_tokens": 1850,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 2100,
+  "cache_hits": 8,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 6050.0,
+  "status": "improved",
+  "evidence": [
+    "production_artifacts/ETAPA_0_PLANIFICACION_NEUTRAL.md",
+    "production_artifacts/evaluations/ETAPA_0_EVALUATION.json"
+  ],
+  "decision": "keep"
+}

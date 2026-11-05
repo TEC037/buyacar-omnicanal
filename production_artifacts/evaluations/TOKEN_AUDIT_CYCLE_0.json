@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-00",
+  "input_tokens": 3600,
+  "output_tokens": 580,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 1500,
+  "cache_hits": 6,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 4180.0,
+  "status": "improved",
+  "evidence": [
+    "production_artifacts/ZERO_FRICTION_RUNBOOK.md",
+    "production_artifacts/traces/TRACE_CYCLE_0.json",
+    "production_artifacts/evaluations/CYCLE_0_EVALUATION.json"
+  ],
+  "decision": "keep"
+}

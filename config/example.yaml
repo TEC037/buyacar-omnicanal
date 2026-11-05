@@ -1,0 +1,33 @@
+operatingMode: SIMULATION
+emergencyKillSwitch: false
+enableFastPath: true
+confidenceThreshold: 0.80
+inventory:
+  url: https://buyacar.com.co/wp-json/vehica/v1/cars
+  refreshMinutes: 15
+  staleMinutes: 30
+ai:
+  primary: gemini
+  fallback: ollama
+  temperature: 0.1
+  geminiTimeoutMs: 8000
+  ollamaTimeoutMs: 25000
+limits:
+  maxMessagesPerHour: 120
+  maxMessagesPerDay: 250
+  maxInputTokens: 1500
+  maxOutputTokens: 300
+security:
+  localBindAddress: 127.0.0.1
+  maxRequestBodyBytes: 262144
+
+# La latencia puede aumentar para ahorrar tokens; medir antes de cambiar.
+tokenEconomy:
+  priority: primordial
+  allowExtraLatencyForSavings: true
+  maxAgentTokensPerCycle: 8000
+  maxHandoffTokens: 700
+  maxCycleReportTokens: 500
+  compressionBeforeHandoff: true
+  cacheBeforeAI: true
+  fastPathBeforeAI: true

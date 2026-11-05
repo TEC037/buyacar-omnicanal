@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-2",
+  "input_tokens": 2850,
+  "output_tokens": 890,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 2200,
+  "cache_hits": 12,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 3740.0,
+  "status": "improved",
+  "evidence": [
+    "app_build/internal/inventory/inventory.go",
+    "app_build/internal/inventory/stub.go",
+    "app_build/internal/inventory/inventory_test.go"
+  ],
+  "decision": "keep"
+}

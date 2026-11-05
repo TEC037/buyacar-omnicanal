@@ -1,0 +1,16 @@
+{
+  "cycle_id": "cycle-4",
+  "input_tokens": 2550,
+  "output_tokens": 960,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 2600,
+  "cache_hits": 18,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 3510.0,
+  "status": "improved",
+  "evidence": [
+    "app_build/internal/guard/guard.go",
+    "app_build/internal/guard/guard_test.go"
+  ],
+  "decision": "keep"
+}

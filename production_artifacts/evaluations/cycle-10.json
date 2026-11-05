@@ -1,0 +1,72 @@
+{
+  "cycle_id": "cycle-10",
+  "timestamp_utc": "2026-10-28T22:38:00Z",
+  "hypothesis": "La transicion a modo DRAFT bajo orden humana explicita, integrando Ollama local (llama3.2:3b), Gemini por variable de entorno, el canal piloto de correo y el evaluador de puerta de salida (100 conversaciones), permite operar en Etapa B con cero riesgo de envio no autorizado.",
+  "primary_metric": {
+    "name": "draft_stage_b_components_active",
+    "baseline": 67,
+    "target": 70,
+    "observed": 70,
+    "status": "improved"
+  },
+  "dimensions": {
+    "correctness": {
+      "score": 100,
+      "status": "improved",
+      "evidence": [
+        "app_build/cmd/buyacar/main.go",
+        "app_build/internal/ai/providers.go",
+        "app_build/internal/obs/obs.go"
+      ]
+    },
+    "security": {
+      "score": 100,
+      "status": "improved",
+      "evidence": [
+        "operatingMode=DRAFT_authorized_by_human",
+        "delimited_prompt_with_pii_redaction",
+        "ollama_loopback_only_127.0.0.1",
+        "autopilot_blocked_until_100_conversations_gate"
+      ]
+    },
+    "latency": {
+      "score": 100,
+      "status": "unchanged",
+      "evidence": [
+        "fast_path_p99_under_5ms"
+      ]
+    },
+    "cost": {
+      "score": 100,
+      "status": "improved",
+      "evidence": [
+        "production_artifacts/evaluations/token-audit-cycle-10.json",
+        "fast_path_resolves_100pct_of_deterministic_intents_with_0_tokens"
+      ]
+    },
+    "operability": {
+      "score": 100,
+      "status": "improved",
+      "evidence": [
+        "production_artifacts/handoffs/cycle-10.md",
+        "EvaluateDraftExitGate_implemented"
+      ]
+    },
+    "scope": {
+      "score": 100,
+      "status": "improved",
+      "evidence": [
+        "stage_b_draft_mode_active"
+      ]
+    }
+  },
+  "trace_summary": {
+    "checkpoints_ok": 7,
+    "checkpoints_failed": 0,
+    "pii_redactions": 2
+  },
+  "decision": "keep",
+  "rollback_criterion": "Si cualquier respuesta en modo DRAFT intenta enviarse al cliente final en lugar de registrarse como draft_recorded, o si falla cualquiera de los 64 casos dorados.",
+  "next_single_improvement": "Acumular y evaluar el lote de 100 conversaciones en borrador en el canal piloto de correo para medir el criterio de salida hacia AUTOPILOT.",
+  "blockers": []
+}

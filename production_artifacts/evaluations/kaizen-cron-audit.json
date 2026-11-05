@@ -1,0 +1,44 @@
+{
+  "audited_at_utc": "2026-10-29T01:15:21Z",
+  "total_runs_audited": 8,
+  "healthy_crons_count": 3,
+  "status": "improved",
+  "token_budget_ok": true,
+  "latency_gate_ok": true,
+  "security_gate_ok": true,
+  "dead_man_switch_ok": true,
+  "total_tokens_used": 2510,
+  "recommended_action": "keep_active_and_continue_draft_supervision",
+  "regressions_found": [],
+  "calibration": {
+    "calibration_epoch": 3,
+    "calibrated_max_tokens_per_run": 400,
+    "calibrated_latency_target_ms": 0.015,
+    "observed_avg_tokens_per_run": 313,
+    "observed_max_p99_ms": 0.00565,
+    "next_self_improvement": "maintain_minimum_token_floor_and_audit_draft_exit_gate_progress"
+  },
+  "active_schedules": [
+    {
+      "task_id": "task-68",
+      "cron_expression": "*/30 * * * *",
+      "role": "Kaizen PDCA — Mejora Continua BuyaCAR Omnicanal",
+      "iterations_completed": 5,
+      "last_status": "PASS"
+    },
+    {
+      "task_id": "task-69",
+      "cron_expression": "0 * * * *",
+      "role": "MVP Guardian — Puertas de Calidad, Seguridad y Transición DRAFT",
+      "iterations_completed": 3,
+      "last_status": "PASS"
+    },
+    {
+      "task_id": "task-158",
+      "cron_expression": "15 * * * *",
+      "role": "Auditor de Crones Kaizen — Automejora, Autocalibración y Meta-Gobernanza",
+      "iterations_completed": 2,
+      "last_status": "PASS"
+    }
+  ]
+}

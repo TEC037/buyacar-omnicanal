@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cycle_id", "hypothesis", "primary_metric", "dimensions", "decision", "next_single_improvement"],
+  "properties": {
+    "cycle_id": {"type": "string"},
+    "timestamp_utc": {"type": "string", "format": "date-time"},
+    "hypothesis": {"type": "string"},
+    "primary_metric": {"type": "object"},
+    "dimensions": {"type": "object"},
+    "trace_summary": {"type": "object"},
+    "decision": {"enum": ["keep", "iterate", "rollback", "stop"]},
+    "rollback_criterion": {"type": "string"},
+    "next_single_improvement": {"type": "string"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  }
+}

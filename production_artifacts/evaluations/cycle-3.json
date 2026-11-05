@@ -1,0 +1,53 @@
+{
+  "cycle_id": "cycle-3",
+  "timestamp_utc": "2026-10-26T13:41:20Z",
+  "hypothesis": "El motor determinista de triage y Fast-Path (confianza >= 0.80) resuelve consultas frecuentes con 0 tokens de IA en microsegundos y escala ambiguedades de forma segura.",
+  "primary_metric": {
+    "name": "fast_path_deterministic_coverage",
+    "baseline": 0.0,
+    "target": 0.70,
+    "observed": 0.85,
+    "status": "improved"
+  },
+  "dimensions": {
+    "correctness": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["app_build/internal/triage/triage.go", "app_build/internal/fast/fast.go", "app_build/internal/fast/fast_test.go"]
+    },
+    "security": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["prompt_injection_escalation", "zero_ai_tokens_on_fastpath"]
+    },
+    "latency": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["BenchmarkFastPath_ExactMatch_sub_ms"]
+    },
+    "cost": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["production_artifacts/evaluations/token-audit-cycle-3.json"]
+    },
+    "operability": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["editable_BusinessTexts_struct"]
+    },
+    "scope": {
+      "score": 100,
+      "status": "unchanged",
+      "evidence": ["fase_3_fastpath_and_triage_only"]
+    }
+  },
+  "trace_summary": {
+    "checkpoints_ok": 7,
+    "checkpoints_failed": 0,
+    "pii_redactions": 0
+  },
+  "decision": "keep",
+  "rollback_criterion": "Si el Fast-Path responde con confianza < 0.80 o no escala ante multiple_matches o vehiculo vendido.",
+  "next_single_improvement": "Implementar Fase 4 (internal/guard): validacion de cifras >= 5 digitos, allowlist de URLs, frases prohibidas, redaccion de PII, limites de caracteres sin truncar precios/telefonos y fuzzing.",
+  "blockers": []
+}

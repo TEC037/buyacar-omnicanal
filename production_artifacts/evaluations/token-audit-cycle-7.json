@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-7",
+  "input_tokens": 2290,
+  "output_tokens": 860,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 3300,
+  "cache_hits": 29,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 315.0,
+  "status": "improved",
+  "evidence": [
+    "app_build/internal/obs/obs.go",
+    "app_build/internal/obs/obs_test.go",
+    "production_artifacts/traces/trace-cycle-7.md"
+  ],
+  "decision": "keep"
+}

@@ -1,0 +1,83 @@
+{
+  "name": "BuyaCAR Tunja — Puente Híbrido n8n <-> Servidor BuyaCAR Go (RAG BM25 + Gemini + CP5)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "buyacar-bridge",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bridge-webhook-in",
+      "name": "1. Entrada Omnicanal (WhatsApp / Messenger / Telegram)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "webhookId": "buyacar-bridge-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/n8n/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel_id\": {{ JSON.stringify($json.body?.channel_id || $json.channel_id || \"whatsapp\") }},\n  \"customer_alias\": {{ JSON.stringify($json.body?.customer_alias || $json.customer_alias || \"cliente-n8n\") }},\n  \"ad_title\": {{ JSON.stringify($json.body?.ad_title || $json.ad_title || \"\") }},\n  \"message\": {{ JSON.stringify($json.body?.message || $json.message || \"¿Sigue disponible?\") }}\n}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "bridge-http-buyacar",
+      "name": "2. Cerebro BuyaCAR Go (POST /api/n8n/webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "bridge-respond",
+      "name": "3. Respuesta Verificada al Canal / CRM",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        860,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "1. Entrada Omnicanal (WhatsApp / Messenger / Telegram)": {
+      "main": [
+        [
+          {
+            "node": "2. Cerebro BuyaCAR Go (POST /api/n8n/webhook)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Cerebro BuyaCAR Go (POST /api/n8n/webhook)": {
+      "main": [
+        [
+          {
+            "node": "3. Respuesta Verificada al Canal / CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

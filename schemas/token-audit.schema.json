@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cycle_id", "input_tokens", "output_tokens", "repeated_context_tokens", "compressed_context_tokens", "cache_hits", "cache_misses", "tokens_per_resolved_conversation", "status"],
+  "properties": {
+    "cycle_id": {"type": "string"},
+    "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "repeated_context_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "compressed_context_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "cache_hits": {"type": ["integer", "null"], "minimum": 0},
+    "cache_misses": {"type": ["integer", "null"], "minimum": 0},
+    "tokens_per_resolved_conversation": {"type": ["number", "null"], "minimum": 0},
+    "status": {"enum": ["improved", "unchanged", "regressed", "not_measured"]},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "decision": {"enum": ["keep", "iterate", "rollback", "stop"]}
+  }
+}

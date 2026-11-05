@@ -1,0 +1,17 @@
+{
+  "cycle_id": "fase-0-completion",
+  "input_tokens": 3100,
+  "output_tokens": 620,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 1600,
+  "cache_hits": 9,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 3720.0,
+  "status": "improved",
+  "evidence": [
+    "docs/SPEC.md",
+    "docs/adr/0001-modular-go-simulation-token-economy.md",
+    "production_artifacts/golden-cases/cases_fase_1.json"
+  ],
+  "decision": "keep"
+}

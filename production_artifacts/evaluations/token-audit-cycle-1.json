@@ -1,0 +1,20 @@
+{
+  "cycle_id": "cycle-1",
+  "input_tokens": 3950,
+  "output_tokens": 1150,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 1800,
+  "cache_hits": 10,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 5100.0,
+  "status": "improved",
+  "evidence": [
+    "app_build/go.mod",
+    "app_build/internal/channel/channel.go",
+    "app_build/internal/core/core.go",
+    "app_build/internal/store/store.go",
+    "app_build/internal/links/links.go",
+    "docs/TERMOMETRO_GOOGLE.md"
+  ],
+  "decision": "keep"
+}

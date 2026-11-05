@@ -1,0 +1,53 @@
+{
+  "cycle_id": "cycle-4",
+  "timestamp_utc": "2026-10-26T13:46:20Z",
+  "hypothesis": "El Guard determinista bloquea el 100% de cifras >= 5 digitos no respaldadas, URLs no autorizadas, frases prohibidas y truncamientos peligrosos, escalando a humano ante cualquier fallo.",
+  "primary_metric": {
+    "name": "hallucinated_numbers_leaked",
+    "baseline": 0,
+    "target": 0,
+    "observed": 0,
+    "status": "improved"
+  },
+  "dimensions": {
+    "correctness": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["app_build/internal/guard/guard.go", "app_build/internal/guard/guard_test.go"]
+    },
+    "security": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["RedactPII_Ley_1581_2012", "HTTPS_domain_allowlist", "FuzzGuardValidateOutbox"]
+    },
+    "latency": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["precompiled_regex_sub_ms"]
+    },
+    "cost": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["production_artifacts/evaluations/token-audit-cycle-4.json"]
+    },
+    "operability": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["ChannelCharLimits_enforced"]
+    },
+    "scope": {
+      "score": 100,
+      "status": "unchanged",
+      "evidence": ["fase_4_guard_only"]
+    }
+  },
+  "trace_summary": {
+    "checkpoints_ok": 7,
+    "checkpoints_failed": 0,
+    "pii_redactions": 2
+  },
+  "decision": "keep",
+  "rollback_criterion": "Si una sola cifra inventada de >= 5 digitos o URL fuera de allowlist atraviesa ValidateOutbox.",
+  "next_single_improvement": "Implementar Fase 5 (internal/ai e internal/skills): cadena Gemini -> Ollama -> humano con JSON Schema estricto (DisallowedUnknownFields), prefiltrado de 1-3 vehiculos, cache de respuestas aprobadas, timeout, cuota y circuit breaker.",
+  "blockers": []
+}

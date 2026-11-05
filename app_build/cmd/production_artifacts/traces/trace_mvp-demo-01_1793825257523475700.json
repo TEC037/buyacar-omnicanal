@@ -1,0 +1,50 @@
+{
+  "conversation_id": "mvp-demo-01",
+  "channel_id": "whatsapp",
+  "operating_mode": "SIMULATION",
+  "checkpoints": [
+    {
+      "name": "lectura",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:47:37.5219834Z"
+    },
+    {
+      "name": "triage",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:47:37.5219844Z"
+    },
+    {
+      "name": "inventario",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:47:37.5219854Z"
+    },
+    {
+      "name": "respuesta",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:47:37.5219864Z"
+    },
+    {
+      "name": "guard",
+      "status": "ok",
+      "duration_ms": 0.757,
+      "timestamp_utc": "2026-11-04T20:47:37.5227412Z"
+    },
+    {
+      "name": "envio",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:47:37.5227422Z"
+    },
+    {
+      "name": "crm",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:47:37.5227432Z"
+    }
+  ],
+  "total_duration_ms": 0.757
+}

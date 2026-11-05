@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-9",
+  "input_tokens": 2420,
+  "output_tokens": 1090,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 3850,
+  "cache_hits": 36,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 54.8,
+  "status": "improved",
+  "evidence": [
+    "app_build/internal/inventory/http_fetcher.go",
+    "app_build/internal/channel/email_pilot.go",
+    "production_artifacts/handoffs/cycle-9.md"
+  ],
+  "decision": "keep"
+}

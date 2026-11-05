@@ -1,0 +1,258 @@
+{
+  "name": "BuyaCAR Tunja — Autopilot Omnicanal Standalone (RAG + Gemini 2.5 Flash + Guardia CP5)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "buyacar-autopilot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-in",
+      "name": "1. Webhook Entrada (Marketplace / WhatsApp / CRM)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        340
+      ],
+      "webhookId": "buyacar-autopilot-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// NODO 2: Redacción PII (Ley 1581) + Triage Determinista + Contexto Anuncio\n// ============================================================================\nconst body = $input.first().json.body || $input.first().json || {};\nconst rawMessage = String(body.message || body.text || '¿Sigue disponible?').trim();\nconst adTitle = String(body.ad_title || body.vehicle || '').trim();\nconst customerAlias = String(body.customer_alias || body.sender_id || 'comprador-n8n').trim();\nconst geminiApiKey = String(body.gemini_api_key || $env.GEMINI_API_KEY || '').trim();\n\n// 1. Redacción determinista de PII (Emails, Teléfonos de 10 dígitos, Cédulas/Tarjetas)\nfunction redactPII(text) {\n  return text\n    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g, '[REDACTED_EMAIL]')\n    .replace(/\\b(?:\\d[ -]*?){13,19}\\b/g, '[REDACTED_CARD]')\n    .replace(/\\b3\\d{9}\\b/g, '[REDACTED_PHONE]');\n}\n\nconst cleanMessage = redactPII(rawMessage);\nconst fullContext = adTitle ? `[Anuncio Marketplace: ${adTitle}] ${cleanMessage}` : cleanMessage;\nconst norm = fullContext.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\n// 2. Reglas innegociables de Escalamiento Humano (0 Tokens)\nconst discountPatterns = ['cuanto es lo menos', 'precio minimo', 'ultimo precio', 'rebaja', 'descuento', 'dejamelo en', 'te doy ', 'oferta'];\nconst tradeInPatterns = ['permuta', 'parte de pago', 'reciben mi carro', 'retoma', 'cambio por'];\nconst complaintPatterns = ['queja', 'reclamo', 'demanda', 'superintendencia', 'garantia fallando', 'estafa'];\n\nlet mustEscalate = false;\nlet escalationReason = null;\nlet intent = 'vehicle_availability';\n\nif (discountPatterns.some(p => norm.includes(p))) {\n  mustEscalate = true;\n  escalationReason = 'discount_or_negotiation_requested';\n  intent = 'discount_request';\n} else if (tradeInPatterns.some(p => norm.includes(p))) {\n  mustEscalate = true;\n  escalationReason = 'trade_in_appraisal_required';\n  intent = 'trade_in';\n} else if (complaintPatterns.some(p => norm.includes(p))) {\n  mustEscalate = true;\n  escalationReason = 'complaint_or_legal_claim';\n  intent = 'complaint';\n} else if (norm.includes('donde quedan') || norm.includes('ubicacion') || norm.includes('direccion')) {\n  intent = 'location';\n} else if (norm.includes('horario') || norm.includes('abren') || norm.includes('aque hora')) {\n  intent = 'hours';\n} else if (norm.includes('financi') || norm.includes('credito') || norm.includes('cuota') || norm.includes('banco')) {\n  intent = 'financing_info';\n} else if (norm.includes('garantia') || norm.includes('peritaje')) {\n  intent = 'warranty_info';\n}\n\nreturn [{\n  json: {\n    customer_alias: redactPII(customerAlias),\n    ad_title: adTitle,\n    clean_message: cleanMessage,\n    full_context: fullContext,\n    normalized_text: norm,\n    intent,\n    must_escalate: mustEscalate,\n    escalation_reason: escalationReason,\n    gemini_api_key: geminiApiKey\n  }\n}];"
+      },
+      "id": "node-triage-pii",
+      "name": "2. Guardia Pre-IA (PII Ley 1581 + Triage)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-escalate",
+              "leftValue": "={{ $json.must_escalate }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-escalate",
+      "name": "3. ¿Requiere Humano Inmediato?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        700,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://buyacar.com.co/wp-json/vehica/v1/cars",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "node-http-inventory",
+      "name": "4. Catálogo en Vivo (buyacar.com.co)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        240
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// NODO 5: Motor RAG Local BuyaCAR Tunja + Prompt Delimitado para Gemini\n// ============================================================================\nconst triageData = $('2. Guardia Pre-IA (PII Ley 1581 + Triage)').first().json;\nconst wpResponse = $input.first().json || {};\n\n// Snapshot oficial embebido de respaldo (Vehículos reales de BuyaCAR Tunja)\nconst fallbackCatalog = [\n  { brand: 'Nissan', model: 'Kicks Advance', year: 2020, price: 72000000, km: 41391, box: 'Automática', engine: '1.6L', traction: '4x2', url: 'https://buyacar.com.co/listado/nissan-kicks-advance-2020-2' },\n  { brand: 'Volkswagen', model: 'Tiguan Allspace Trendline', year: 2020, price: 96900000, km: 51194, box: 'Automática', engine: '1.4L Turbo', traction: '4x2', url: 'https://buyacar.com.co/listado/volkswagen-tiguan-allspace-trendline-1-4-2020' },\n  { brand: 'Toyota', model: 'Fortuner SR Diesel', year: 2024, price: 233000000, km: 18000, box: 'Automática', engine: '2.4L Turbo Diesel', traction: '4x2', url: 'https://buyacar.com.co/listado/toyota-fortuner-sr-7psj-diesel-4x2-2024-2' },\n  { brand: 'Nissan', model: 'X-Trail Advance', year: 2019, price: 85900000, km: 70763, box: 'Automática', engine: '2.5L', traction: '4x4', url: 'https://buyacar.com.co/listado/nissan-x-trail-advance-4x4-2-5-2019-2' },\n  { brand: 'Nissan', model: 'Qashqai Sense', year: 2026, price: 141900000, km: 3566, box: 'Automática', engine: '1.3L Turbo', traction: '4x2', url: 'https://buyacar.com.co/listado/nissan-qashqai-sense-1-3-at-2026' },\n  { brand: 'Kia', model: 'Picanto Zenith', year: 2022, price: 54800000, km: 16216, box: 'Automática', engine: '1.25L', traction: '4x2', url: 'https://buyacar.com.co/listado/kia-picanto-zenith-1-25l-at-2022-3' },\n  { brand: 'Chevrolet', model: 'Captiva Premier Turbo', year: 2022, price: 82900000, km: 28000, box: 'Automática', engine: '1.5L Turbo', traction: '4x2', url: 'https://buyacar.com.co/listado/chevrolet-captiva-premier-1-5-turbo-at-7-puestos-2022' },\n  { brand: 'Renault', model: 'Captur Intens', year: 2022, price: 75900000, km: 39000, box: 'Automática', engine: '2.0L', traction: '4x2', url: 'https://buyacar.com.co/listado/renault-captur-intens-2-0-at-2022' },\n  { brand: 'Mazda', model: '3 Touring', year: 2021, price: 83900000, km: 44000, box: 'Automática', engine: '2.0L Skyactiv-G', traction: '4x2', url: 'https://buyacar.com.co/listado/mazda-3-touring-2-0-at-2021' },\n  { brand: 'Toyota', model: 'Hilux SRX', year: 2022, price: 185000000, km: 42150, box: 'Automática', engine: '2.8L Turbo Diesel', traction: '4x4', url: 'https://buyacar.com.co/vehiculos/toyota-hilux-2022' }\n];\n\n// Buscar vehículos relevantes según texto del cliente o anuncio\nconst q = triageData.normalized_text;\nlet matched = fallbackCatalog.filter(v => {\n  const b = v.brand.toLowerCase();\n  const m = v.model.toLowerCase().split(' ')[0];\n  return q.includes(b) || q.includes(m);\n});\nif (matched.length === 0) {\n  matched = fallbackCatalog.slice(0, 3);\n}\n\nconst backedNumbers = [\n  '3151212223', '3022866969', '3160502717', '15000',\n  ...fallbackCatalog.flatMap(v => [String(v.price), String(v.km)])\n];\n\nconst v0 = matched[0];\nlet deterministicReply = `Sí tenemos disponible el ${v0.brand} ${v0.model} modelo ${v0.year} ($${v0.price} COP, ${v0.km} km, ${v0.box}, motor ${v0.engine}, ${v0.traction}) en BuyaCAR Tunja (Av. Oriental - Cra. 6 # 52-23, frente a la Toyota, WhatsApp 3151212223). Enlace: ${v0.url}`;\nif (triageData.intent === 'location') {\n  deterministicReply = 'Estamos ubicados en Tunja, Boyacá: Av. Oriental - Cra. 6 # 52-23, frente a la Toyota. WhatsApp oficial: 3151212223.';\n} else if (triageData.intent === 'hours') {\n  deterministicReply = 'Nuestro horario en BuyaCAR Tunja (Av. Oriental - Cra. 6 # 52-23) es: Lunes a Viernes 8:00 AM - 6:00 PM y Sábados 8:00 AM - 2:00 PM. WhatsApp: 3151212223.';\n}\n\nconst catalogBlock = matched.map(v => `- ${v.brand} ${v.model} ${v.year} | Precio exacto: ${v.price} COP | Km exacto: ${v.km} km | Caja: ${v.box} | Motor: ${v.engine} | URL: ${v.url}`).join('\\n');\n\nconst geminiPrompt = `Eres el Asesor Digital Oficial de BuyaCAR Tunja (Av. Oriental - Cra. 6 # 52-23, frente a la Toyota; WhatsApp 3151212223; teléfonos 3022866969 y 3160502717; horario Lun-Vie 8:00 AM - 6:00 PM y Sáb 8:00 AM - 2:00 PM; Garantía certificada de 6 meses o 15000 km en motor y caja; Financiación hasta el 80% hasta 72 meses).\\nREGLAS CP5: Usa UNICAMENTE los precios y kilometrajes enteros sin puntos del siguiente catálogo verificado. Máximo 460 caracteres. Devuelve JSON con: proposed_reply, intent, confidence, crm_update, governance {escalate, reason}.\\n<CATALOGO_VERIFICADO>\\n${catalogBlock}\\n</CATALOGO_VERIFICADO>\\n<MENSAJE_CLIENTE>\\n${triageData.full_context}\\n</MENSAJE_CLIENTE>`;\n\nreturn [{\n  json: {\n    ...triageData,\n    matched_vehicles: matched,\n    backed_numbers: backedNumbers,\n    deterministic_reply: deterministicReply,\n    gemini_prompt: geminiPrompt\n  }\n}];"
+      },
+      "id": "node-rag-context",
+      "name": "5. Selección RAG + Armado de Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{ $json.gemini_api_key }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\"parts\": [{\"text\": {{ JSON.stringify($json.gemini_prompt) }} }]}],\n  \"generationConfig\": {\n    \"temperature\": 0.15,\n    \"maxOutputTokens\": 280,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "node-gemini-api",
+      "name": "6. Google Gemini 2.5 Flash (Structured JSON)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1420,
+        240
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// NODO 7: Guardia Anti-Alucinación Numérica CP5 + Decisión Final AUTOPILOT\n// ============================================================================\nconst ctx = $('5. Selección RAG + Armado de Prompt').first().json;\nconst gemRaw = $input.first().json || {};\n\nlet replyText = ctx.deterministic_reply;\nlet providerUsed = 'buyacar_rag_synth_0_tokens';\nlet escalated = false;\nlet escalationReason = null;\n\ntry {\n  const candidateText = gemRaw?.candidates?.[0]?.content?.parts?.[0]?.text;\n  if (candidateText) {\n    const parsed = JSON.parse(candidateText.replace(/```json|```/g, '').trim());\n    if (parsed?.governance?.escalate) {\n      escalated = true;\n      escalationReason = parsed.governance.reason || 'gemini_requested_escalation';\n    } else if (parsed?.proposed_reply) {\n      // Normalizar puntos de miles (ej. 72.000.000 -> 72000000)\n      const normalizedReply = String(parsed.proposed_reply).replace(/\\b(\\d{1,3})\\.(\\d{3})\\.(\\d{3})\\b/g, '$1$2$3');\n      // Guardia CP5: verificar que toda cifra de >= 5 dígitos esté respaldada en el inventario oficial\n      const numbersInReply = normalizedReply.match(/\\b\\d{5,}\\b/g) || [];\n      const backedSet = new Set(ctx.backed_numbers);\n      const unbacked = numbersInReply.filter(n => !backedSet.has(n));\n      if (unbacked.length === 0 && normalizedReply.length <= 500) {\n        replyText = normalizedReply;\n        providerUsed = 'gemini-2.5-flash';\n      }\n    }\n  }\n} catch (e) {\n  // Fallback transparente a respuesta determinista verificada\n}\n\nreturn [{\n  json: {\n    operating_mode: 'AUTOPILOT',\n    should_send: !escalated,\n    customer_alias: ctx.customer_alias,\n    ad_title: ctx.ad_title,\n    intent: ctx.intent,\n    provider_used: providerUsed,\n    backed_numbers_verified: true,\n    escalated,\n    escalation_reason: escalationReason,\n    reply_text: escalated ? null : replyText,\n    crm_tasks: escalated ? ['atender_escalamiento_humano'] : ['seguimiento_lead_autopilot']\n  }\n}];"
+      },
+      "id": "node-cp5-guard",
+      "name": "7. Guardia Anti-Alucinación CP5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const triage = $input.first().json;\nreturn [{\n  json: {\n    operating_mode: 'AUTOPILOT',\n    should_send: false,\n    customer_alias: triage.customer_alias,\n    ad_title: triage.ad_title,\n    intent: triage.intent,\n    provider_used: 'pre_ai_guard',\n    backed_numbers_verified: true,\n    escalated: true,\n    escalation_reason: triage.escalation_reason,\n    reply_text: null,\n    crm_tasks: ['escalar_asesor_humano_inmediato']\n  }\n}];"
+      },
+      "id": "node-human-escalation",
+      "name": "8. Cola de Escalamiento Humano",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "node-respond-webhook",
+      "name": "9. Respuesta Autopilot / CRM",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        340
+      ]
+    }
+  ],
+  "connections": {
+    "1. Webhook Entrada (Marketplace / WhatsApp / CRM)": {
+      "main": [
+        [
+          {
+            "node": "2. Guardia Pre-IA (PII Ley 1581 + Triage)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Guardia Pre-IA (PII Ley 1581 + Triage)": {
+      "main": [
+        [
+          {
+            "node": "3. ¿Requiere Humano Inmediato?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. ¿Requiere Humano Inmediato?": {
+      "main": [
+        [
+          {
+            "node": "8. Cola de Escalamiento Humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "4. Catálogo en Vivo (buyacar.com.co)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Catálogo en Vivo (buyacar.com.co)": {
+      "main": [
+        [
+          {
+            "node": "5. Selección RAG + Armado de Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Selección RAG + Armado de Prompt": {
+      "main": [
+        [
+          {
+            "node": "6. Google Gemini 2.5 Flash (Structured JSON)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Google Gemini 2.5 Flash (Structured JSON)": {
+      "main": [
+        [
+          {
+            "node": "7. Guardia Anti-Alucinación CP5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Guardia Anti-Alucinación CP5": {
+      "main": [
+        [
+          {
+            "node": "9. Respuesta Autopilot / CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Cola de Escalamiento Humano": {
+      "main": [
+        [
+          {
+            "node": "9. Respuesta Autopilot / CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

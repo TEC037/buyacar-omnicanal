@@ -1,0 +1,50 @@
+{
+  "conversation_id": "copilot-mkt-1793825474999574900-2",
+  "channel_id": "facebook_marketplace",
+  "operating_mode": "SIMULATION",
+  "checkpoints": [
+    {
+      "name": "lectura",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:51:15.0001633Z"
+    },
+    {
+      "name": "triage",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:51:15.0001643Z"
+    },
+    {
+      "name": "inventario",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:51:15.0001653Z"
+    },
+    {
+      "name": "respuesta",
+      "status": "ok",
+      "duration_ms": 1.086,
+      "timestamp_utc": "2026-11-04T20:51:15.00125Z"
+    },
+    {
+      "name": "guard",
+      "status": "ok",
+      "duration_ms": 0.689,
+      "timestamp_utc": "2026-11-04T20:51:15.0019393Z"
+    },
+    {
+      "name": "envio",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:51:15.0024885Z"
+    },
+    {
+      "name": "crm",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:51:15.0024895Z"
+    }
+  ],
+  "total_duration_ms": 1.775
+}

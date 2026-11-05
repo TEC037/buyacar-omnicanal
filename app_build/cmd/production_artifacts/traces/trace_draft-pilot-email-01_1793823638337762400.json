@@ -1,0 +1,50 @@
+{
+  "conversation_id": "draft-pilot-email-01",
+  "channel_id": "email",
+  "operating_mode": "SIMULATION",
+  "checkpoints": [
+    {
+      "name": "lectura",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:20:38.3372119Z"
+    },
+    {
+      "name": "triage",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:20:38.3372129Z"
+    },
+    {
+      "name": "inventario",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:20:38.3372139Z"
+    },
+    {
+      "name": "respuesta",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:20:38.3372149Z"
+    },
+    {
+      "name": "guard",
+      "status": "ok",
+      "duration_ms": 0.55,
+      "timestamp_utc": "2026-11-04T20:20:38.3377624Z"
+    },
+    {
+      "name": "envio",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:20:38.3377634Z"
+    },
+    {
+      "name": "crm",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T20:20:38.3377644Z"
+    }
+  ],
+  "total_duration_ms": 0.55
+}

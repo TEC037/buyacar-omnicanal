@@ -1,0 +1,53 @@
+{
+  "cycle_id": "cycle-5",
+  "timestamp_utc": "2026-10-26T13:51:20Z",
+  "hypothesis": "La cadena Cache -> Gemini -> Ollama -> Humano con DisallowUnknownFields, 1 reintento en JSON invalido, circuit breaker y presupuesto de 1500/300 tokens garantiza resiliencia y ahorro de tokens.",
+  "primary_metric": {
+    "name": "ai_fallback_chain_verified",
+    "baseline": 0.0,
+    "target": 1.0,
+    "observed": 1.0,
+    "status": "improved"
+  },
+  "dimensions": {
+    "correctness": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["app_build/internal/ai/ai.go", "app_build/internal/ai/ai_test.go"]
+    },
+    "security": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["DisallowUnknownFields_strict_schema", "max_3_vehicles_context_minimization"]
+    },
+    "latency": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["ApprovedCache_zero_latency_hit"]
+    },
+    "cost": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["production_artifacts/evaluations/token-audit-cycle-5.json", "app_build/internal/skills/skills.go"]
+    },
+    "operability": {
+      "score": 100,
+      "status": "improved",
+      "evidence": ["circuit_breaker_and_single_json_retry"]
+    },
+    "scope": {
+      "score": 100,
+      "status": "unchanged",
+      "evidence": ["fase_5_ai_and_skills_only"]
+    }
+  },
+  "trace_summary": {
+    "checkpoints_ok": 7,
+    "checkpoints_failed": 0,
+    "pii_redactions": 0
+  },
+  "decision": "keep",
+  "rollback_criterion": "Si se aceptan claves desconocidas en el JSON de IA o se supera el presupuesto de 1500/300 tokens por conversacion.",
+  "next_single_improvement": "Implementar Fase 6 (internal/escalate y orquestacion completa de los 12 pasos del flujo en internal/core): idempotencia end-to-end, cola humana y reanudacion tras reinicio en SIMULATION.",
+  "blockers": []
+}

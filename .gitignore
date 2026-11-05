@@ -1,0 +1,7 @@
+*.env
+.env*
+!.env.example
+*.db
+*.sqlite
+coverage.out
+app_build/bin/

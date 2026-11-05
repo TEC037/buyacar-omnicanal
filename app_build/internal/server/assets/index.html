@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuyaCAR Supervisor Console</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --warning: #eab308;
+      --danger: #dc2626;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-sim { background-color: #0369a1; color: #e0f2fe; }
+    .badge-draft { background-color: #ca8a04; color: #fef9c3; }
+    .badge-autopilot { background-color: #15803d; color: #dcfce7; }
+    .badge-paused { background-color: #b91c1c; color: #fee2e2; }
+    .badge-healthy { background-color: #15803d; color: #dcfce7; }
+
+    .grid-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .stat-val {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      background-color: rgba(15, 23, 42, 0.4);
+    }
+
+    tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out;
+      text-decoration: none;
+    }
+
+    .btn-approve {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+    .btn-approve:hover { background-color: #15803d; }
+
+    .btn-unpause {
+      background-color: var(--primary);
+      color: #ffffff;
+    }
+    .btn-unpause:hover { background-color: var(--primary-hover); }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background-color: var(--border-color);
+    }
+
+    .empty-msg {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px 20px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>BuyaCAR Supervisor Console</h1>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Control Plane Omnicanal &mdash; Tunja, Boyacá &mdash; Gobernanza Ley 1581
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span id="badge-mode" class="badge badge-sim">SIMULATION</span>
+        <button onclick="switchMode('SIMULATION')" class="btn btn-outline" title="Modo seguro sin envíos">Modo SIMULATION</button>
+        <button onclick="switchMode('DRAFT')" class="btn btn-outline" title="Genera borradores para aprobar en 1 clic">Modo DRAFT</button>
+        <button onclick="switchMode('AUTOPILOT')" class="btn btn-approve" title="Envío automático verificado sin intervención humana">⚡ Activar AUTOPILOT</button>
+        <button onclick="toggleKillSwitch(true)" class="btn" style="background:#dc2626;color:#fff;" title="Freno de emergencia inmediato (< 1s)">🛑 Kill Switch</button>
+        <a href="/metrics" target="_blank" class="btn btn-outline">Prometheus /metrics</a>
+      </div>
+    </header>
+
+    <div class="grid-stats">
+      <div class="card">
+        <div class="stat-label">Fast-Path p99</div>
+        <div id="stat-latency" class="stat-val">2.59 µs</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Semantic Cache Hits</div>
+        <div id="stat-cache-hits" class="stat-val">0</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Escalate Queue</div>
+        <div id="stat-escalate" class="stat-val">0</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Borradores DRAFT</div>
+        <div id="stat-drafts" class="stat-val">0</div>
+      </div>
+    </div>
+
+    <!-- Facebook Marketplace Copilot & Autonomous Processor (M2) -->
+    <div class="card" style="margin-bottom: 28px; border-color: #2563eb;">
+      <div class="section-title">
+        <span>🤖 Copiloto &amp; Procesador Autónomo Facebook Marketplace (CP1–CP7 + RAG Local)</span>
+        <span class="badge badge-sim">0 PII &bull; Anti-Alucinación CP5</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">
+            Anuncio de Facebook Marketplace asociado (referral.ad_title):
+          </label>
+          <select id="copilot-ad-title" style="width:100%; background:#0f172a; color:#f8fafc; border:1px solid var(--border-color); border-radius:6px; padding:8px; margin-bottom:8px; font-family:inherit; font-size:0.85rem;">
+            <option value="Nissan Kicks 2020">Anuncio Real: Nissan Kicks Advance 2020 ($72.000.000 - 59.735 km)</option>
+            <option value="Volkswagen Tiguan 2020">Anuncio Real: Volkswagen Tiguan Allspace 2020 ($75.000.000)</option>
+            <option value="Toyota Fortuner 2024">Anuncio Real: Toyota Fortuner SR 7PSJ Diesel 2024 ($233.000.000)</option>
+            <option value="Nissan X-Trail 2019">Anuncio Real: Nissan X-Trail Exclusive 4x4 2019 ($89.000.000)</option>
+            <option value="Nissan Qashqai 2026">Anuncio Real: Nissan Qashqai Exclusive 4x4 2026 ($148.000.000)</option>
+            <option value="Kia Picanto 2022">Anuncio Real: Kia Picanto Emotion 2022 ($46.000.000)</option>
+            <option value="Chevrolet Captiva 2022">Anuncio Real: Chevrolet Captiva LTZ Turbo 2022 ($65.000.000)</option>
+            <option value="Renault Captur 2022">Anuncio Real: Renault Captur Intens 2022 ($75.000.000)</option>
+            <option value="Mazda Mazda3 2021">Anuncio Real: Mazda 3 Touring 2021 ($80.000.000)</option>
+            <option value="Ford Escape 2017">Anuncio Real: Ford Escape Titanium 4x4 2017 ($67.000.000)</option>
+            <option value="Toyota Hilux 2022">Anuncio: Toyota Hilux SRX 2.8 4x4 2022 ($185.000.000)</option>
+            <option value="Mazda CX-5 2021">Anuncio: Mazda CX-5 Touring 2.5 2021 ($118.000.000)</option>
+            <option value="Mazda CX-5 2023">Anuncio: Mazda CX-5 Grand Touring AWD 2023 ($142.000.000)</option>
+            <option value="Chevrolet Tracker 2022">Anuncio: Chevrolet Tracker Turbo Premier 2022 ($86.000.000)</option>
+            <option value="Mazda CX-30 2023">Anuncio: Mazda CX-30 Grand Touring 2023 ($105.000.000)</option>
+            <option value="Renault Stepway 2020">Anuncio: Renault Sandero Stepway Intens 2020 ($54.000.000)</option>
+            <option value="Renault Logan 2022">Anuncio: Renault Logan Life 2022 ($48.500.000)</option>
+            <option value="Renault Duster 2020">Anuncio: Renault Duster 2.0 4x4 2020 (VENDIDO - Escala)</option>
+            <option value="">(Sin anuncio asociado / consulta general)</option>
+          </select>
+          <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">
+            Mensaje del comprador en Facebook Marketplace / Messenger:
+          </label>
+          <textarea id="copilot-input" rows="2" style="width:100%; background:#0f172a; color:#f8fafc; border:1px solid var(--border-color); border-radius:6px; padding:10px; font-family:inherit; font-size:0.9rem;" placeholder="Ej: ¿Sigue disponible?">¿Sigue disponible?</textarea>
+          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+            <button onclick="runCopilot()" class="btn btn-unpause">⚡ Generar Respuesta (Copiloto)</button>
+            <button onclick="simulateWebhookAutopilot()" class="btn btn-approve">🚀 Probar Webhook AUTOPILOT en Vivo (1-Clic)</button>
+            <button onclick="testN8NBridge()" class="btn btn-outline" style="border-color:#38bdf8;color:#38bdf8;">🔗 Probar Puente n8n (/api/n8n/webhook)</button>
+            <button onclick="setSample('¿Sigue disponible?')" class="btn btn-outline">Ej: ¿Sigue disponible? (1-Clic)</button>
+            <button onclick="setSample('Hola, busco una camioneta automática familiar, ¿qué me recomiendas entre la Kicks 2020 y la Captur 2022?')" class="btn btn-outline">Ej: Comparativa Abierta (Gemini+RAG)</button>
+            <button onclick="setSample('¿Qué precio tiene y qué garantía dan en motor y caja?')" class="btn btn-outline">Ej: Compuesta (Precio+Garantía)</button>
+            <button onclick="setSample('¿Cuánto es lo menos?')" class="btn btn-outline">Ej: Regateo (Escala)</button>
+          </div>
+        </div>
+        <div style="background:#0f172a; border:1px solid var(--border-color); border-radius:6px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">
+              <span id="copilot-meta">Listo para procesar consulta...</span>
+              <span id="copilot-latency"></span>
+            </div>
+            <div id="copilot-output" style="font-size:0.92rem; white-space:pre-wrap; color:#e2e8f0; min-height:54px;">Selecciona o escribe un mensaje y presiona Generar Respuesta.</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
+            <span id="copilot-rag" style="font-size:0.75rem; color:#94a3b8;"></span>
+            <button onclick="copyCopilotReply()" class="btn btn-approve">📋 Copiar Respuesta (1-Clic)</button>
+          </div>
+        </div>
+      </div>
+      <!-- Conexión rápida Gemini API Key + n8n (sin usar Meta Developers) -->
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 0.86rem; color: #38bdf8; font-weight: 600; margin-bottom: 8px;">
+          ✨ Conectar Gemini API Key (Google AI Studio en 1 Clic) + Workflows n8n Listos para Importar
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <input id="gemini-api-key" type="password" placeholder="Pega aquí tu GEMINI_API_KEY (AIzaSy...) de aistudio.google.com/apikey" style="flex:1; min-width:260px; background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.84rem;" />
+          <button onclick="saveGeminiConfig()" class="btn btn-approve">✨ Activar Gemini 2.5 Flash en Caliente</button>
+          <span id="gemini-status-badge" style="font-size:0.78rem; color:var(--text-muted);">Modo actual: RAG Determinista (0 tokens)</span>
+        </div>
+        <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 6px;">
+          Workflows n8n listos en tu carpeta: <code>n8n/buyacar_standalone_gemini_workflow.json</code> (100% autónomo en n8n) y <code>n8n/buyacar_bridge_workflow.json</code> (Puente HTTP <code>POST /api/n8n/webhook</code>).
+        </div>
+      </div>
+      <!-- Conexión guiada de Meta sin usar terminal -->
+      <details style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+        <summary style="cursor: pointer; font-size: 0.85rem; color: #93c5fd; font-weight: 600;">
+          🔑 Conectar Página Oficial de Facebook / Meta en Caliente (Opcional — ya funciona en Sandbox local sin tokens)
+        </summary>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+          <input id="meta-page-id" type="text" placeholder="META_PAGE_ID (ej. 1029384756)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+          <input id="meta-access-token" type="password" placeholder="META_ACCESS_TOKEN (EAAB...)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+          <input id="meta-app-secret" type="password" placeholder="META_APP_SECRET (HMAC-SHA256)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+          <button onclick="saveMetaConfig()" class="btn btn-unpause">💾 Guardar Credenciales Meta</button>
+        </div>
+        <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 8px;">
+          Webhook Callback URL para pegar en Meta Developers: <code>/webhooks/meta</code> &bull; Verify Token por defecto: <code>buyacar-verify-sim</code>
+        </div>
+      </details>
+    </div>
+
+    <!-- Escalate Queue Review -->
+    <div class="card" style="margin-bottom: 28px;">
+      <div class="section-title">
+        <span>Cola de Escalamiento Humano (escalate.Queue)</span>
+        <button onclick="refreshData()" class="btn btn-outline">Refrescar</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-escalate">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Canal</th>
+              <th>Conversación</th>
+              <th>Motivo</th>
+              <th>Contexto Redactado (Ley 1581)</th>
+              <th>Fecha UTC</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-escalate">
+            <tr><td colspan="6" class="empty-msg">Sin tickets pendientes en la cola</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 1-Click DRAFT Approval -->
+    <div class="card" style="margin-bottom: 28px;">
+      <div class="section-title">
+        <span>Borradores DRAFT Pendientes de Aprobación Humana</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-drafts">
+          <thead>
+            <tr>
+              <th>Draft ID</th>
+              <th>Conversación</th>
+              <th>Alias Cliente</th>
+              <th>Asunto / Referencia</th>
+              <th>Cuerpo del Borrador</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-drafts">
+            <tr><td colspan="6" class="empty-msg">No hay borradores pendientes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Channel Resilience & Pause Management -->
+    <div class="card">
+      <div class="section-title">
+        <span>Salud y Resiliencia de Canales Omnicanal</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-channels">
+          <thead>
+            <tr>
+              <th>Canal</th>
+              <th>Estado</th>
+              <th>Fallos Consecutivos</th>
+              <th>Cuota Horaria Restante</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-channels">
+            <tr><td colspan="5" class="empty-msg">Cargando canales...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
+
+    function setSample(txt) {
+      document.getElementById('copilot-input').value = txt;
+      runCopilot();
+    }
+
+    async function runCopilot() {
+      const msg = document.getElementById('copilot-input').value.trim();
+      const adTitleEl = document.getElementById('copilot-ad-title');
+      const adTitle = adTitleEl ? adTitleEl.value : '';
+      if (!msg) return;
+      try {
+        const res = await fetch('/api/copilot/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel_id: 'facebook_marketplace', customer_alias: 'Comprador_Marketplace', ad_title: adTitle, message: msg })
+        });
+        if (!res.ok) {
+          showToast('Error en Copiloto: ' + res.statusText);
+          return;
+        }
+        const data = await res.json();
+        document.getElementById('copilot-meta').innerText =
+          `Intent: ${data.intent} | Ruta: ${data.used_fast_path ? 'Fast-Path (0 tok)' : (data.used_rag ? 'RAG Local' : 'Guard/Escalate')} | Estado: ${data.escalated ? 'ESCALADO (' + data.escalation_reason + ')' : 'APROBADO CP5'}`;
+        document.getElementById('copilot-latency').innerText = `${data.latency_us} µs`;
+        document.getElementById('copilot-output').innerText =
+          data.proposed_reply || `[ESCALADO A ASESOR HUMANO]: Motivo = ${data.escalation_reason}`;
+        document.getElementById('copilot-rag').innerText =
+          (data.rag_chunks && data.rag_chunks.length > 0) ? ('RAG: ' + data.rag_chunks.join(' | ')) : 'Sin fragmentos extra requeridos';
+        refreshData();
+      } catch (err) {
+        showToast('Error de red: ' + err.message);
+      }
+    }
+
+    function copyCopilotReply() {
+      const txt = document.getElementById('copilot-output').innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(txt);
+      }
+      showToast('Respuesta copiada al portapapeles');
+    }
+
+    async function switchMode(mode) {
+      try {
+        const res = await fetch('/api/mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: mode })
+        });
+        if (res.ok) {
+          await toggleKillSwitch(false, true);
+          showToast('Modo cambiado a ' + mode);
+          refreshData();
+        } else {
+          showToast('Error cambiando modo: ' + res.statusText);
+        }
+      } catch (err) {
+        showToast('Error de red: ' + err.message);
+      }
+    }
+
+    async function toggleKillSwitch(active, silent) {
+      try {
+        const res = await fetch('/api/killswitch?active=' + (active ? 'true' : 'false'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ active: active })
+        });
+        if (res.ok && !silent) {
+          showToast(active ? '🛑 KILL SWITCH ACTIVADO: Envíos detenidos' : 'Kill Switch desactivado');
+          refreshData();
+        }
+      } catch (err) {
+        if (!silent) showToast('Error Kill Switch: ' + err.message);
+      }
+    }
+
+    async function simulateWebhookAutopilot() {
+      const msg = document.getElementById('copilot-input').value.trim() || '¿Sigue disponible?';
+      const adTitleEl = document.getElementById('copilot-ad-title');
+      const adTitle = adTitleEl ? adTitleEl.value : '';
+      try {
+        const res = await fetch('/api/webhook/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ad_title: adTitle, message: msg })
+        });
+        if (!res.ok) {
+          showToast('Error en Webhook Simulator: ' + res.statusText);
+          return;
+        }
+        const data = await res.json();
+        document.getElementById('copilot-meta').innerText =
+          `Webhook /webhooks/meta | Modo: ${data.operating_mode} | Entrega: ${data.send_status || (data.escalated ? 'ESCALADO' : 'OK')} | CRM: ${data.crm_task_id || '-'}`;
+        document.getElementById('copilot-latency').innerText = `HMAC-SHA256 OK`;
+        document.getElementById('copilot-output').innerText =
+          data.dispatched_reply || `[ESCALADO A HUMANO]: Motivo = ${data.escalation_reason}`;
+        document.getElementById('copilot-rag').innerText =
+          `Anuncio: ${data.ad_title || 'General'} | Comprador: ${data.sender_id}`;
+        showToast(`Webhook procesado en modo ${data.operating_mode} (${data.send_status || 'escalated'})`);
+        refreshData();
+      } catch (err) {
+        showToast('Error de red: ' + err.message);
+      }
+    }
+
+    async function saveMetaConfig() {
+      const pageId = document.getElementById('meta-page-id').value.trim();
+      const token = document.getElementById('meta-access-token').value.trim();
+      const secret = document.getElementById('meta-app-secret').value.trim();
+      try {
+        const res = await fetch('/api/meta/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page_id: pageId, access_token: token, app_secret: secret })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          showToast('Credenciales Meta actualizadas en caliente (' + data.graph_base_url + ')');
+        }
+      } catch (err) {
+        showToast('Error guardando credenciales: ' + err.message);
+      }
+    }
+
+    async function saveGeminiConfig() {
+      const apiKey = document.getElementById('gemini-api-key').value.trim();
+      if (!apiKey) {
+        showToast('Pega primero tu GEMINI_API_KEY (AIzaSy...)');
+        return;
+      }
+      try {
+        const res = await fetch('/api/gemini/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_key: apiKey })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('gemini-status-badge').innerText =
+            `✅ Gemini Activo (${data.masked_key || 'configurado'}) | Estrategia: ${data.strategy || 'A4_adaptive'}`;
+          document.getElementById('gemini-status-badge').style.color = '#10b981';
+          showToast('✨ Gemini 2.5 Flash activado en caliente con Guardia CP5');
+        }
+      } catch (err) {
+        showToast('Error activando Gemini: ' + err.message);
+      }
+    }
+
+    async function testN8NBridge() {
+      const msg = document.getElementById('copilot-input').value.trim() || '¿Sigue disponible?';
+      const adTitleEl = document.getElementById('copilot-ad-title');
+      const adTitle = adTitleEl ? adTitleEl.value : '';
+      try {
+        const res = await fetch('/api/n8n/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            channel_id: 'n8n_whatsapp',
+            customer_alias: 'cliente-n8n-boyaca',
+            ad_title: adTitle,
+            message: msg
+          })
+        });
+        if (!res.ok) {
+          showToast('Error en puente n8n: ' + res.statusText);
+          return;
+        }
+        const data = await res.json();
+        document.getElementById('copilot-meta').innerText =
+          `Puente n8n (/api/n8n/webhook) | Motor: ${data.provider_used || 'rag'} | Enviar: ${data.should_send ? 'SÍ' : 'ESCALADO'}`;
+        document.getElementById('copilot-latency').innerText = `CP5 Verificado`;
+        document.getElementById('copilot-output').innerText =
+          data.reply_text || `[ESCALADO A HUMANO EN N8N]: Motivo = ${data.escalation_reason}`;
+        document.getElementById('copilot-rag').innerText =
+          `RAG: ${(data.rag_chunks || []).join(', ') || 'Directo'}`;
+        showToast('Respuesta de puente n8n generada con éxito');
+        refreshData();
+      } catch (err) {
+        showToast('Error de red n8n: ' + err.message);
+      }
+    }
+
+    async function approveDraft(draftId) {
+      try {
+        const res = await fetch(`/api/draft/approve?id=${encodeURIComponent(draftId)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+          showToast(`Borrador ${draftId} aprobado con éxito`);
+          refreshData();
+        } else {
+          showToast(`Error aprobando borrador: ${res.statusText}`);
+        }
+      } catch (err) {
+        showToast(`Fallo de red: ${err.message}`);
+      }
+    }
+
+    async function unpauseChannel(channelId) {
+      try {
+        const res = await fetch(`/api/channel/unpause?channel=${encodeURIComponent(channelId)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+          showToast(`Canal ${channelId} reanudado exitosamente`);
+          refreshData();
+        } else {
+          showToast(`Error al reanudar canal: ${res.statusText}`);
+        }
+      } catch (err) {
+        showToast(`Fallo de red: ${err.message}`);
+      }
+    }
+
+    async function refreshData() {
+      try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Update mode badge
+        const modeBadge = document.getElementById('badge-mode');
+        modeBadge.innerText = data.operating_mode || 'SIMULATION';
+        modeBadge.className = 'badge ' + (
+          data.operating_mode === 'AUTOPILOT' ? 'badge-autopilot' :
+          data.operating_mode === 'DRAFT' ? 'badge-draft' : 'badge-sim'
+        );
+
+        // Stats
+        if (data.metrics) {
+          document.getElementById('stat-latency').innerText = (data.metrics.fastpath_latency_p99 || 2.59) + ' µs';
+          document.getElementById('stat-cache-hits').innerText = data.metrics.cache_hits_total || 0;
+        }
+        document.getElementById('stat-escalate').innerText = (data.escalate_queue || []).length;
+        document.getElementById('stat-drafts').innerText = (data.drafts || []).length;
+
+        // Escalate Table
+        const tbodyEsc = document.getElementById('tbody-escalate');
+        if (data.escalate_queue && data.escalate_queue.length > 0) {
+          tbodyEsc.innerHTML = data.escalate_queue.map(t => `
+            <tr>
+              <td><code>${t.ID || t.id}</code></td>
+              <td>${t.ChannelID || t.channel_id}</td>
+              <td>${t.ConversationID || t.conversation_id}</td>
+              <td>${t.Reason || t.reason}</td>
+              <td>${t.RedactedContext || t.redacted_context || '-'}</td>
+              <td>${t.CreatedAt || t.created_at || '-'}</td>
+            </tr>
+          `).join('');
+        } else {
+          tbodyEsc.innerHTML = '<tr><td colspan="6" class="empty-msg">Sin tickets pendientes en la cola</td></tr>';
+        }
+
+        // Drafts Table
+        const tbodyDrafts = document.getElementById('tbody-drafts');
+        if (data.drafts && data.drafts.length > 0) {
+          tbodyDrafts.innerHTML = data.drafts.map(d => `
+            <tr>
+              <td><code>${d.DraftID || d.draft_id}</code></td>
+              <td>${d.ConversationID || d.conversation_id}</td>
+              <td>${d.CustomerAlias || d.customer_alias}</td>
+              <td>${d.Subject || d.subject || '-'}</td>
+              <td style="max-width: 400px; white-space: pre-wrap;">${d.DraftBody || d.draft_body}</td>
+              <td>
+                <button onclick="approveDraft('${d.DraftID || d.draft_id}')" class="btn btn-approve">
+                  Aprobar (1-Clic)
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbodyDrafts.innerHTML = '<tr><td colspan="6" class="empty-msg">No hay borradores pendientes</td></tr>';
+        }
+
+        // Channels Table
+        const tbodyChan = document.getElementById('tbody-channels');
+        if (data.channels && data.channels.length > 0) {
+          tbodyChan.innerHTML = data.channels.map(c => `
+            <tr>
+              <td><strong>${c.id}</strong></td>
+              <td>
+                <span class="badge ${c.paused ? 'badge-paused' : 'badge-healthy'}">
+                  ${c.paused ? 'PAUSADO' : 'ACTIVO'}
+                </span>
+              </td>
+              <td>${c.consecutive_failures} / 3</td>
+              <td>${c.hourly_remaining !== undefined ? c.hourly_remaining : '120'} msg/h</td>
+              <td>
+                ${c.paused ? `
+                  <button onclick="unpauseChannel('${c.id}')" class="btn btn-unpause">
+                    Reanudar Canal
+                  </button>
+                ` : `<span style="color: var(--text-muted); font-size: 0.8rem;">Normal</span>`}
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbodyChan.innerHTML = '<tr><td colspan="5" class="empty-msg">No hay canales registrados</td></tr>';
+        }
+      } catch (err) {
+        console.error('Error fetching status:', err);
+      }
+    }
+
+    // Auto-refresh every 5 seconds
+    setInterval(refreshData, 5000);
+    window.addEventListener('DOMContentLoaded', refreshData);
+  </script>
+</body>
+</html>

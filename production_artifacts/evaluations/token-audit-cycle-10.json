@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-10",
+  "input_tokens": 2150,
+  "output_tokens": 980,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 4100,
+  "cache_hits": 38,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 48.2,
+  "status": "improved",
+  "evidence": [
+    "app_build/internal/ai/providers.go",
+    "app_build/cmd/buyacar/main.go",
+    "production_artifacts/handoffs/cycle-10.md"
+  ],
+  "decision": "keep"
+}

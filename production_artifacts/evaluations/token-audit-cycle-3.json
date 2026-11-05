@@ -1,0 +1,17 @@
+{
+  "cycle_id": "cycle-3",
+  "input_tokens": 2700,
+  "output_tokens": 1120,
+  "repeated_context_tokens": 0,
+  "compressed_context_tokens": 2400,
+  "cache_hits": 15,
+  "cache_misses": 0,
+  "tokens_per_resolved_conversation": 3820.0,
+  "status": "improved",
+  "evidence": [
+    "app_build/internal/triage/triage.go",
+    "app_build/internal/fast/fast.go",
+    "app_build/internal/fast/fast_test.go"
+  ],
+  "decision": "keep"
+}

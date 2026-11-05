@@ -1,0 +1,7 @@
+.git
+.gemini
+*.log
+*.tmp
+tmp/
+scratch/
+iniciar_buyacar.bat

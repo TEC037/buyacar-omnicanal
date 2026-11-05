@@ -1,0 +1,17 @@
+{
+  "trace_id": "trace-cycle-03-fastpath",
+  "cycle_id": "cycle-03",
+  "timestamp_utc": "2026-10-26T13:41:00Z",
+  "operating_mode": "SIMULATION",
+  "checkpoints": {
+    "cp1_lectura": { "status": "ok", "duration_ms": 1, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" },
+    "cp2_triage": { "status": "ok", "duration_ms": 1, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" },
+    "cp3_inventario": { "status": "ok", "duration_ms": 1, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" },
+    "cp4_respuesta": { "status": "ok", "duration_ms": 1, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" },
+    "cp5_guard": { "status": "ok", "duration_ms": 1, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" },
+    "cp6_envio": { "status": "ok", "duration_ms": 1, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" },
+    "cp7_crm": { "status": "ok", "duration_ms": 0, "error": null, "timestamp_utc": "2026-10-26T13:41:00Z" }
+  },
+  "pii_detected": false,
+  "external_calls": 0
+}

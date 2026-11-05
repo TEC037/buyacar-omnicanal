@@ -1,0 +1,50 @@
+{
+  "conversation_id": "messenger-buyer-kicks-2020",
+  "channel_id": "messenger",
+  "operating_mode": "AUTOPILOT",
+  "checkpoints": [
+    {
+      "name": "lectura",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:29:58.1830589Z"
+    },
+    {
+      "name": "triage",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:29:58.1830599Z"
+    },
+    {
+      "name": "inventario",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:29:58.1830609Z"
+    },
+    {
+      "name": "respuesta",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:29:58.1830619Z"
+    },
+    {
+      "name": "guard",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:29:58.1830629Z"
+    },
+    {
+      "name": "envio",
+      "status": "ok",
+      "duration_ms": 2.097,
+      "timestamp_utc": "2026-11-04T21:29:58.1851566Z"
+    },
+    {
+      "name": "crm",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-04T21:29:58.1851576Z"
+    }
+  ],
+  "total_duration_ms": 2.097
+}

@@ -1,0 +1,25 @@
+# Umbrales de salida; Gemini debe reemplazar null sólo con mediciones reales.
+phase_0:
+  workspace_discovered: true
+phase_1:
+  build: green
+  test: green
+  race: green
+phase_2:
+  hallucinated_inventory_values: 0
+  ambiguous_matches_escalated: 100%
+phase_3:
+  fast_path_p99_ms: 5
+phase_4:
+  guard_bypass: 0
+phase_5:
+  fallback_chain_tested: true
+phase_6:
+  duplicate_sends: 0
+  restart_recovery: true
+phase_7:
+  trace_checkpoints: 7
+  pii_in_logs: 0
+phase_8:
+  end_to_end_simulation: green
+  real_external_accounts: false
