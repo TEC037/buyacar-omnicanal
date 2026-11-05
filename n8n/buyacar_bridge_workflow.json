@@ -21,7 +21,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://127.0.0.1:8080/api/n8n/webhook",
+        "url": "https://buyacar-omnicanal-production.up.railway.app/api/n8n/webhook",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"channel_id\": {{ JSON.stringify($json.body?.channel_id || $json.channel_id || \"whatsapp\") }},\n  \"customer_alias\": {{ JSON.stringify($json.body?.customer_alias || $json.customer_alias || \"cliente-n8n\") }},\n  \"ad_title\": {{ JSON.stringify($json.body?.ad_title || $json.ad_title || \"\") }},\n  \"message\": {{ JSON.stringify($json.body?.message || $json.message || \"¿Sigue disponible?\") }}\n}",

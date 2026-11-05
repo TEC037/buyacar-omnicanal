@@ -1,0 +1,320 @@
+{
+  "name": "BuyaCAR Tunja — Hub Omnicanal Total (WhatsApp + Facebook + Instagram + Web + Telegram)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-inbound",
+        "options": {}
+      },
+      "id": "trigger-whatsapp",
+      "name": "Canal 1: WhatsApp Inbound (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 160],
+      "webhookId": "buyacar-whatsapp-inbound"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "meta-inbound",
+        "options": {}
+      },
+      "id": "trigger-meta",
+      "name": "Canal 2: Facebook / Messenger / Marketplace",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 340],
+      "webhookId": "buyacar-meta-inbound"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-inbound",
+        "options": {}
+      },
+      "id": "trigger-instagram",
+      "name": "Canal 3: Instagram Direct",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 520],
+      "webhookId": "buyacar-instagram-inbound"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "trigger-chat-web",
+      "name": "Canal 4: Chat Web Widget (buyacar.com.co)",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 700],
+      "webhookId": "buyacar-chat-web"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// NORMALIZADOR OMNICANAL MULTICANAL — BuyaCAR Tunja\n// Extrae el mensaje, remitente y anuncio sin importar por cuál canal ingresó.\n// ============================================================================\nconst item = $input.first().json;\nconst body = item.body || item;\n\nlet channel = 'general';\nlet senderId = 'cliente-desconocido';\nlet message = '';\nlet adTitle = '';\n\n// 1. Detección si proviene de WhatsApp (Evolution API, Z-API o Cloud API)\nif (body.data?.message || body.messages || body.entry?.[0]?.changes?.[0]?.value?.messages) {\n  channel = 'whatsapp';\n  const waMsg = body.data?.message || body.messages?.[0] || body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];\n  senderId = body.data?.key?.remoteJid || waMsg?.from || body.phone || 'whatsapp-user';\n  message = waMsg?.conversation || waMsg?.extendedTextMessage?.text || waMsg?.text?.body || '';\n} \n// 2. Detección si proviene de Meta (Facebook Marketplace / Messenger)\nelse if (body.entry?.[0]?.messaging) {\n  const m = body.entry[0].messaging[0];\n  channel = body.object === 'instagram' ? 'instagram' : 'facebook_marketplace';\n  senderId = m.sender?.id || 'meta-user';\n  message = m.message?.text || '';\n  adTitle = m.message?.referral?.ad_title || m.referral?.ad_title || '';\n}\n// 3. Detección si proviene del Chat Web embebido en buyacar.com.co\nelse if (item.chatInput || body.chatInput) {\n  channel = 'web_chat';\n  senderId = item.sessionId || 'visitante-web';\n  message = item.chatInput || body.chatInput || '';\n}\n// 4. Formato genérico REST / CRM\nelse {\n  channel = body.channel_id || 'api_rest';\n  senderId = body.customer_alias || body.sender_id || 'lead-omnicanal';\n  message = body.message || body.text || '¿Sigue disponible?';\n  adTitle = body.ad_title || '';\n}\n\nreturn [{\n  json: {\n    channel_id: channel,\n    customer_alias: senderId,\n    ad_title: adTitle,\n    message: String(message).trim()\n  }\n}];"
+      },
+      "id": "node-normalizer",
+      "name": "Normalizador Omnicanal (Triage de Entrada)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://buyacar-omnicanal-production.up.railway.app/api/n8n/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel_id\": {{ JSON.stringify($json.channel_id) }},\n  \"customer_alias\": {{ JSON.stringify($json.customer_alias) }},\n  \"ad_title\": {{ JSON.stringify($json.ad_title) }},\n  \"message\": {{ JSON.stringify($json.message) }}\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-buyacar-brain",
+      "name": "Cerebro BuyaCAR en Railway (RAG + Precios + CP5)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [780, 420]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.escalated }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Escalar a Humano"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel_id }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Despachar WhatsApp"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel_id }}",
+                    "rightValue": "facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Despachar Facebook"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel_id }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Despachar Instagram"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Despachar Web / General"
+        }
+      },
+      "id": "node-router",
+      "name": "Enrutador por Canal de Origen",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1060, 420]
+    },
+    {
+      "parameters": {
+        "content": "### 👨‍💼 ESCALAMIENTO COMERCIAL HUMANO\nEl cliente solicitó descuento, retoma/permuta o presentó reclamo.\n\nAquí puedes conectar:\n- Alerta por Telegram al vendedor\n- Mensaje a un grupo de WhatsApp de asesores\n- Registro en Google Sheets / Notion CRM",
+        "height": 180,
+        "width": 320
+      },
+      "id": "note-escalate",
+      "name": "Nota: Escalamiento",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1360, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.whatsapp.com/v21.0/TU_PHONE_NUMBER_ID/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_META_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": {{ JSON.stringify($json.customer_alias) }},\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": {{ JSON.stringify($json.reply_text) }}\n  }\n}",
+        "options": {}
+      },
+      "id": "node-send-whatsapp",
+      "name": "Despacho WhatsApp (Personalizar Credenciales)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1360, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_META_PAGE_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\"id\": {{ JSON.stringify($json.customer_alias) }} },\n  \"message\": {\"text\": {{ JSON.stringify($json.reply_text) }} }\n}",
+        "options": {}
+      },
+      "id": "node-send-facebook",
+      "name": "Despacho Facebook / Marketplace (Personalizar)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1360, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_INSTAGRAM_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\"id\": {{ JSON.stringify($json.customer_alias) }} },\n  \"message\": {\"text\": {{ JSON.stringify($json.reply_text) }} }\n}",
+        "options": {}
+      },
+      "id": "node-send-instagram",
+      "name": "Despacho Instagram Direct (Personalizar)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1360, 680]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "node-send-web",
+      "name": "Despacho Web / REST (Retorno Inmediato)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1360, 860]
+    }
+  ],
+  "connections": {
+    "Canal 1: WhatsApp Inbound (Webhook)": {
+      "main": [[{"node": "Normalizador Omnicanal (Triage de Entrada)", "type": "main", "index": 0}]]
+    },
+    "Canal 2: Facebook / Messenger / Marketplace": {
+      "main": [[{"node": "Normalizador Omnicanal (Triage de Entrada)", "type": "main", "index": 0}]]
+    },
+    "Canal 3: Instagram Direct": {
+      "main": [[{"node": "Normalizador Omnicanal (Triage de Entrada)", "type": "main", "index": 0}]]
+    },
+    "Canal 4: Chat Web Widget (buyacar.com.co)": {
+      "main": [[{"node": "Normalizador Omnicanal (Triage de Entrada)", "type": "main", "index": 0}]]
+    },
+    "Normalizador Omnicanal (Triage de Entrada)": {
+      "main": [[{"node": "Cerebro BuyaCAR en Railway (RAG + Precios + CP5)", "type": "main", "index": 0}]]
+    },
+    "Cerebro BuyaCAR en Railway (RAG + Precios + CP5)": {
+      "main": [[{"node": "Enrutador por Canal de Origen", "type": "main", "index": 0}]]
+    },
+    "Enrutador por Canal de Origen": {
+      "main": [
+        [],
+        [{"node": "Despacho WhatsApp (Personalizar Credenciales)", "type": "main", "index": 0}],
+        [{"node": "Despacho Facebook / Marketplace (Personalizar)", "type": "main", "index": 0}],
+        [{"node": "Despacho Instagram Direct (Personalizar)", "type": "main", "index": 0}],
+        [{"node": "Despacho Web / REST (Retorno Inmediato)", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
