@@ -22,4 +22,15 @@ func TestLeadScorer_FunnelAndScoring(t *testing.T) {
 	if stage3 != StageNegotiation {
 		t.Fatalf("expected negotiation stage, got %s", stage3)
 	}
+
+	// 4. Captura de número de celular colombiano desde Marketplace
+	phone := ExtractColombianPhone("Claro que sí, mi número es 310 987 6543 para que me escriban al WhatsApp")
+	if phone != "3109876543" {
+		t.Fatalf("expected phone 3109876543, got %s", phone)
+	}
+
+	score4, stage4 := CalculateIntentScore("Mi whatsapp es 3123456789, escríbanme allá por favor", "Toyota Fortuner 2024", 2)
+	if score4 < 90 || stage4 != StageAppointment {
+		t.Fatalf("expected high score >= 90 and StageAppointment when phone is provided, got score=%d, stage=%s", score4, stage4)
+	}
 }

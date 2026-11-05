@@ -2,6 +2,7 @@ package crm
 
 import (
 	"context"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -11,31 +12,50 @@ import (
 type FunnelStage string
 
 const (
-	StageCapture       FunnelStage = "captura_t0"       // T+0s: Ingesta del lead
-	StageQualified     FunnelStage = "calificado"        // Intención clara, presupuesto y vehículo
-	StageAppointment   FunnelStage = "cita_peritaje"     // Agendamiento de prueba de ruta en Tunja
-	StageNegotiation   FunnelStage = "negociacion_humana"// Escalamiento comercial por retoma/regateo
-	StageClosedWon     FunnelStage = "cierre_reserva"    // Vehículo separado o reservado
-	StageDiscarded     FunnelStage = "descartado"        // Sin coincidencia o inviable
+	StageCapture       FunnelStage = "captura_t0"        // T+0s: Ingesta del lead
+	StageQualified     FunnelStage = "calificado"         // Intención clara, presupuesto y vehículo
+	StageAppointment   FunnelStage = "cita_peritaje"      // Agendamiento de prueba de ruta en Tunja
+	StageNegotiation   FunnelStage = "negociacion_humana" // Escalamiento comercial por retoma/regateo
+	StageClosedWon     FunnelStage = "cierre_reserva"     // Vehículo separado o reservado
+	StageDiscarded     FunnelStage = "descartado"         // Sin coincidencia o inviable
 )
+
+// reColombianPhone detecta números celulares de 10 dígitos colombianos que comienzan con 3.
+var reColombianPhone = regexp.MustCompile(`(?:(?:\+?57)?\s*)?(3[0-5]\d{8})`)
+
+// ExtractColombianPhone extrae el primer número celular colombiano detectado en un texto.
+func ExtractColombianPhone(text string) string {
+	clean := strings.ReplaceAll(text, " ", "")
+	clean = strings.ReplaceAll(clean, "-", "")
+	clean = strings.ReplaceAll(clean, ".", "")
+	clean = strings.ReplaceAll(clean, "(", "")
+	clean = strings.ReplaceAll(clean, ")", "")
+	match := reColombianPhone.FindStringSubmatch(clean)
+	if len(match) >= 2 {
+		return match[1]
+	}
+	return ""
+}
 
 // LeadProfile almacena el perfil dinámico de intención y memoria contextual del cliente.
 type LeadProfile struct {
-	CustomerID      string      `json:"customer_id"`
-	CustomerAlias   string      `json:"customer_alias"`
-	ChannelID       string      `json:"channel_id"`
-	IntentScore     int         `json:"intent_score"` // 0 a 100
-	Stage           FunnelStage `json:"stage"`
-	TargetVehicle   string      `json:"target_vehicle,omitempty"`
-	BudgetCOP       int64       `json:"budget_cop,omitempty"`
-	PaymentMethod   string      `json:"payment_method,omitempty"` // contado, credito, permuta
-	NeedsFinancing  bool        `json:"needs_financing"`
-	HasTradeIn      bool        `json:"has_trade_in"`
-	AppointmentTime *time.Time  `json:"appointment_time,omitempty"`
-	AppointmentSede string      `json:"appointment_sede,omitempty"`
-	InteractionCount int        `json:"interaction_count"`
-	LastInteraction time.Time   `json:"last_interaction"`
-	Notes           []string    `json:"notes,omitempty"`
+	CustomerID       string      `json:"customer_id"`
+	CustomerAlias    string      `json:"customer_alias"`
+	ChannelID        string      `json:"channel_id"`
+	Phone            string      `json:"phone,omitempty"`
+	WhatsAppHandoff  bool        `json:"whatsapp_handoff"`
+	IntentScore      int         `json:"intent_score"` // 0 a 100
+	Stage            FunnelStage `json:"stage"`
+	TargetVehicle    string      `json:"target_vehicle,omitempty"`
+	BudgetCOP        int64       `json:"budget_cop,omitempty"`
+	PaymentMethod    string      `json:"payment_method,omitempty"` // contado, credito, permuta
+	NeedsFinancing   bool        `json:"needs_financing"`
+	HasTradeIn       bool        `json:"has_trade_in"`
+	AppointmentTime  *time.Time  `json:"appointment_time,omitempty"`
+	AppointmentSede  string      `json:"appointment_sede,omitempty"`
+	InteractionCount int         `json:"interaction_count"`
+	LastInteraction  time.Time   `json:"last_interaction"`
+	Notes            []string    `json:"notes,omitempty"`
 }
 
 // LeadScorer calcula el puntaje de intención de compra (0 a 100) en tiempo real.
@@ -47,6 +67,12 @@ func CalculateIntentScore(text, adTitle string, priorInteractions int) (int, Fun
 	norm = strings.ReplaceAll(norm, "ó", "o")
 	norm = strings.ReplaceAll(norm, "ú", "u")
 	score := 25 // Base por contactar
+
+	// Si el usuario proporcionó su número telefónico de contacto
+	detectedPhone := ExtractColombianPhone(text)
+	if detectedPhone != "" {
+		score += 45 // Señal máxima de conversión: entrega de datos de contacto
+	}
 
 	if adTitle != "" {
 		score += 25 // Interés en anuncio específico de inventario
@@ -77,7 +103,9 @@ func CalculateIntentScore(text, adTitle string, priorInteractions int) (int, Fun
 
 	// Determinar etapa en el embudo
 	stage := StageCapture
-	if strings.Contains(norm, "cuanto es lo menos") || strings.Contains(norm, "rebaja") || strings.Contains(norm, "permuta") {
+	if detectedPhone != "" {
+		stage = StageAppointment // Con teléfono listo para agendamiento / peritaje por WhatsApp
+	} else if strings.Contains(norm, "cuanto es lo menos") || strings.Contains(norm, "rebaja") || strings.Contains(norm, "permuta") {
 		stage = StageNegotiation
 	} else if score >= 80 || strings.Contains(norm, "cita") || strings.Contains(norm, "prueba de ruta") {
 		stage = StageAppointment

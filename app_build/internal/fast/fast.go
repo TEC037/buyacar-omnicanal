@@ -133,19 +133,19 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {
 	switch intent {
 	case triage.IntentPrice:
-		return fmt.Sprintf("El %s %s modelo %d certificado tiene un precio de $%d COP (%d km, caja %s). Manejamos todos los bancos, listos para prueba de ruta en Tunja (WhatsApp 3151212223). Más detalles en: %s",
+		return fmt.Sprintf("El %s %s modelo %d certificado tiene un precio de $%d COP (%d km, caja %s). Manejamos todos los bancos, listos para prueba de ruta en Tunja. ¿A qué número de WhatsApp te compartimos la ficha y coordinamos tu cita? (Línea oficial: 3151212223). Enlace: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.OfficialURL)
 	case triage.IntentMileage:
-		return fmt.Sprintf("El %s %s modelo %d cuenta con %d km verificados y precio de $%d COP. Agenda tu cita por WhatsApp 3151212223. Detalles oficiales: %s",
+		return fmt.Sprintf("El %s %s modelo %d cuenta con %d km verificados y precio de $%d COP. ¿Nos dejas tu WhatsApp para coordinar peritaje y prueba de ruta en Tunja? (WhatsApp 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.MileageKm, v.PriceCOP, v.OfficialURL)
 	case triage.IntentDocs:
-		return fmt.Sprintf("El %s %s %d (placa terminada en %s) se entrega con SOAT y tecnomecánica al día. Precio: $%d COP. WhatsApp 3151212223. Ficha oficial: %s",
+		return fmt.Sprintf("El %s %s %d (placa terminada en %s) se entrega con SOAT y tecnomecánica al día. Precio: $%d COP. ¿A qué número de WhatsApp te enviamos copia de peritaje y documentos? (WhatsApp 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PlateLastChar, v.PriceCOP, v.OfficialURL)
 	case triage.IntentVisit:
-		return fmt.Sprintf("Puedes ver y hacer prueba de ruta del %s %s %d ($%d COP, %d km) en nuestra vitrina de Tunja. Escríbenos al WhatsApp 3151212223. Ficha: %s",
+		return fmt.Sprintf("Puedes ver y hacer prueba de ruta del %s %s %d ($%d COP, %d km) en nuestra vitrina de Tunja. ¿Cuál es tu número de WhatsApp para reservarte el espacio? (WhatsApp oficial 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
 	default:
-		return fmt.Sprintf("Sí tenemos disponible el %s %s modelo %d ($%d COP, %d km, %s, motor %s, %s, color %s) en BuyaCAR Tunja (WhatsApp 3151212223). Enlace: %s",
+		return fmt.Sprintf("Sí tenemos disponible el %s %s modelo %d ($%d COP, %d km, %s, motor %s, %s, color %s) en BuyaCAR Tunja. ¿A qué número de WhatsApp te contactamos para agendar peritaje? (WhatsApp 3151212223). Enlace: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)
 	}
 }

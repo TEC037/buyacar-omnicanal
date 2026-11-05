@@ -357,6 +357,23 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		out := lastWebhookOutcome
 		lastWebhookMu.Unlock()
 
+		detectedPhone := crm.ExtractColombianPhone(message)
+		if detectedPhone != "" {
+			leadStore.UpsertLead(ctx, crm.LeadProfile{
+				CustomerID:      senderID,
+				CustomerAlias:   "Comprador Marketplace Tunja",
+				ChannelID:       "facebook_marketplace",
+				Phone:           detectedPhone,
+				WhatsAppHandoff: true,
+				IntentScore:     95,
+				Stage:           crm.StageAppointment,
+				TargetVehicle:   adTitle,
+				AppointmentSede: "Av. Oriental - Cra. 6 #52-23, frente a la Toyota, Tunja",
+				LastInteraction: time.Now().UTC(),
+				Notes:           []string{"Teléfono capturado en Marketplace. Enrutado a WhatsApp: " + detectedPhone},
+			})
+		}
+
 		return map[string]interface{}{
 			"webhook_http_status": rec.code,
 			"operating_mode":      string(eng.OperatingMode()),
@@ -364,6 +381,8 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 			"sender_id":           senderID,
 			"ad_title":            adTitle,
 			"inbound_message":     message,
+			"detected_phone":      detectedPhone,
+			"whatsapp_handoff":    detectedPhone != "",
 			"send_status":         string(out.SendStatus),
 			"dispatched_reply":    out.SentReply,
 			"escalated":           out.Escalated,
@@ -463,6 +482,23 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		}
 
 		intentScore, funnelStage := crm.CalculateIntentScore(req.Message, req.AdTitle, 1)
+
+		detectedPhone := crm.ExtractColombianPhone(req.Message)
+		if detectedPhone != "" {
+			leadStore.UpsertLead(cCtx, crm.LeadProfile{
+				CustomerID:      convID,
+				CustomerAlias:   req.CustomerAlias,
+				ChannelID:       req.ChannelID,
+				Phone:           detectedPhone,
+				WhatsAppHandoff: true,
+				IntentScore:     intentScore,
+				Stage:           funnelStage,
+				TargetVehicle:   req.AdTitle,
+				AppointmentSede: "Av. Oriental - Cra. 6 #52-23, frente a la Toyota, Tunja",
+				LastInteraction: time.Now().UTC(),
+				Notes:           []string{"Contacto WhatsApp recibido: " + detectedPhone},
+			})
+		}
 
 		return server.CopilotResponse{
 			ChannelID:        req.ChannelID,
