@@ -198,9 +198,9 @@
       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
         <span id="badge-mode" class="badge badge-sim">SIMULATION</span>
         <button onclick="switchMode('SIMULATION')" class="btn btn-outline" title="Modo seguro sin envíos">Modo SIMULATION</button>
-        <button onclick="switchMode('DRAFT')" class="btn btn-outline" title="Genera borradores para aprobar en 1 clic">Modo DRAFT</button>
-        <button onclick="switchMode('AUTOPILOT')" class="btn btn-approve" title="Envío automático verificado sin intervención humana">⚡ Activar AUTOPILOT</button>
-        <button onclick="toggleKillSwitch(true)" class="btn" style="background:#dc2626;color:#fff;" title="Freno de emergencia inmediato (< 1s)">🛑 Kill Switch</button>
+        <button onclick="switchMode('DRAFT')" class="btn btn-outline" title="Genera borradores para aprobar">Modo DRAFT</button>
+        <button onclick="switchMode('AUTOPILOT')" class="btn btn-approve" title="Envío automático verificado sin intervención humana">Activar AUTOPILOT</button>
+        <button onclick="toggleKillSwitch(true)" class="btn" style="background:#dc2626;color:#fff;" title="Freno de emergencia inmediato (< 1s)">Kill Switch</button>
         <a href="/metrics" target="_blank" class="btn btn-outline">Prometheus /metrics</a>
       </div>
     </header>
@@ -227,8 +227,8 @@
     <!-- Facebook Marketplace Copilot & Autonomous Processor (M2) -->
     <div class="card" style="margin-bottom: 28px; border-color: #2563eb;">
       <div class="section-title">
-        <span>🤖 Copiloto &amp; Procesador Autónomo Facebook Marketplace (CP1–CP7 + RAG Local)</span>
-        <span class="badge badge-sim">0 PII &bull; Anti-Alucinación CP5</span>
+        <span>Copiloto &amp; Procesador Autonomo Facebook Marketplace (CP1-CP7 + RAG Local)</span>
+        <span class="badge badge-sim">0 PII &bull; Anti-Alucinacion CP5</span>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div>
@@ -261,10 +261,10 @@
           </label>
           <textarea id="copilot-input" rows="2" style="width:100%; background:#0f172a; color:#f8fafc; border:1px solid var(--border-color); border-radius:6px; padding:10px; font-family:inherit; font-size:0.9rem;" placeholder="Ej: ¿Sigue disponible?">¿Sigue disponible?</textarea>
           <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-            <button onclick="runCopilot()" class="btn btn-unpause">⚡ Generar Respuesta (Copiloto)</button>
-            <button onclick="simulateWebhookAutopilot()" class="btn btn-approve">🚀 Probar Webhook AUTOPILOT en Vivo (1-Clic)</button>
-            <button onclick="testN8NBridge()" class="btn btn-outline" style="border-color:#38bdf8;color:#38bdf8;">🔗 Probar Puente n8n (/api/n8n/webhook)</button>
-            <button onclick="setSample('¿Sigue disponible?')" class="btn btn-outline">Ej: ¿Sigue disponible? (1-Clic)</button>
+            <button onclick="runCopilot()" class="btn btn-unpause">Generar Respuesta (Copiloto)</button>
+            <button onclick="simulateWebhookAutopilot()" class="btn btn-approve">Probar Webhook AUTOPILOT en Vivo</button>
+            <button onclick="testN8NBridge()" class="btn btn-outline" style="border-color:#38bdf8;color:#38bdf8;">Probar Puente n8n (/api/n8n/webhook)</button>
+            <button onclick="setSample('¿Sigue disponible?')" class="btn btn-outline">Ej: ¿Sigue disponible?</button>
             <button onclick="setSample('Hola, busco una camioneta automática familiar, ¿qué me recomiendas entre la Kicks 2020 y la Captur 2022?')" class="btn btn-outline">Ej: Comparativa Abierta (Gemini+RAG)</button>
             <button onclick="setSample('¿Qué precio tiene y qué garantía dan en motor y caja?')" class="btn btn-outline">Ej: Compuesta (Precio+Garantía)</button>
             <button onclick="setSample('¿Cuánto es lo menos?')" class="btn btn-outline">Ej: Regateo (Escala)</button>
@@ -280,18 +280,18 @@
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
             <span id="copilot-rag" style="font-size:0.75rem; color:#94a3b8;"></span>
-            <button onclick="copyCopilotReply()" class="btn btn-approve">📋 Copiar Respuesta (1-Clic)</button>
+            <button onclick="copyCopilotReply()" class="btn btn-approve">Copiar Respuesta</button>
           </div>
         </div>
       </div>
       <!-- Conexión rápida Gemini API Key + n8n (sin usar Meta Developers) -->
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
         <div style="font-size: 0.86rem; color: #38bdf8; font-weight: 600; margin-bottom: 8px;">
-          ✨ Conectar Gemini API Key (Google AI Studio en 1 Clic) + Workflows n8n Listos para Importar
+          Conectar Gemini API Key (Google AI Studio) + Workflows n8n Listos para Importar
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
           <input id="gemini-api-key" type="password" placeholder="Pega aquí tu GEMINI_API_KEY (AIzaSy...) de aistudio.google.com/apikey" style="flex:1; min-width:260px; background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.84rem;" />
-          <button onclick="saveGeminiConfig()" class="btn btn-approve">✨ Activar Gemini 2.5 Flash en Caliente</button>
+          <button onclick="saveGeminiConfig()" class="btn btn-approve">Activar Gemini 2.5 Flash en Caliente</button>
           <span id="gemini-status-badge" style="font-size:0.78rem; color:var(--text-muted);">Modo actual: RAG Determinista (0 tokens)</span>
         </div>
         <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 6px;">
@@ -301,13 +301,13 @@
       <!-- Conexión guiada de Meta sin usar terminal -->
       <details style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
         <summary style="cursor: pointer; font-size: 0.85rem; color: #93c5fd; font-weight: 600;">
-          🔑 Conectar Página Oficial de Facebook / Meta en Caliente (Opcional — ya funciona en Sandbox local sin tokens)
+          Conectar Pagina Oficial de Facebook / Meta en Caliente (Opcional - ya funciona en Sandbox local sin tokens)
         </summary>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
           <input id="meta-page-id" type="text" placeholder="META_PAGE_ID (ej. 1029384756)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
           <input id="meta-access-token" type="password" placeholder="META_ACCESS_TOKEN (EAAB...)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
           <input id="meta-app-secret" type="password" placeholder="META_APP_SECRET (HMAC-SHA256)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
-          <button onclick="saveMetaConfig()" class="btn btn-unpause">💾 Guardar Credenciales Meta</button>
+          <button onclick="saveMetaConfig()" class="btn btn-unpause">Guardar Credenciales Meta</button>
         </div>
         <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 8px;">
           Webhook Callback URL para pegar en Meta Developers: <code>/webhooks/meta</code> &bull; Verify Token por defecto: <code>buyacar-verify-sim</code>
@@ -318,7 +318,7 @@
     <!-- CRM Lead Management & Sales Decisions -->
     <div class="card" style="margin-bottom: 28px; border-color: #10b981;">
       <div class="section-title">
-        <span>💼 Centro de Decisiones Comerciales CRM &mdash; Embudo Predictivo (Tunja)</span>
+        <span>Centro de Decisiones Comerciales CRM &mdash; Embudo Predictivo (Tunja)</span>
         <button onclick="loadCRMLeads()" class="btn btn-outline">Refrescar Prospectos</button>
       </div>
       <div style="overflow-x: auto;">
@@ -492,7 +492,7 @@
           body: JSON.stringify({ active: active })
         });
         if (res.ok && !silent) {
-          showToast(active ? '🛑 KILL SWITCH ACTIVADO: Envíos detenidos' : 'Kill Switch desactivado');
+          showToast(active ? 'KILL SWITCH ACTIVADO: Envios detenidos' : 'Kill Switch desactivado');
           refreshData();
         }
       } catch (err) {
@@ -563,9 +563,9 @@
         if (res.ok) {
           const data = await res.json();
           document.getElementById('gemini-status-badge').innerText =
-            `✅ Gemini Activo (${data.masked_key || 'configurado'}) | Estrategia: ${data.strategy || 'A4_adaptive'}`;
+            `Gemini Activo (${data.masked_key || 'configurado'}) | Estrategia: ${data.strategy || 'A4_adaptive'}`;
           document.getElementById('gemini-status-badge').style.color = '#10b981';
-          showToast('✨ Gemini 2.5 Flash activado en caliente con Guardia CP5');
+          showToast('Gemini 2.5 Flash activado en caliente con Guardia CP5');
         }
       } catch (err) {
         showToast('Error activando Gemini: ' + err.message);
@@ -754,13 +754,13 @@
               <td>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                   <button onclick="applyDecision('${l.customer_id}', 'agendar_cita')" class="btn btn-approve" title="Agendar prueba de ruta física en Tunja">
-                    🚗 Agendar Cita
+                    Agendar Cita
                   </button>
                   <button onclick="applyDecision('${l.customer_id}', 'aprobar_descuento')" class="btn btn-unpause" title="Pasar a negociación personalizada">
-                    💬 Asignar Asesor
+                    Asignar Asesor
                   </button>
                   <button onclick="applyDecision('${l.customer_id}', 'cerrar_reserva')" class="btn btn-outline" style="border-color:#10b981;color:#10b981;" title="Marcar separado con abono de 2M">
-                    🔒 Reservar ($2M)
+                    Reservar ($2M)
                   </button>
                 </div>
               </td>

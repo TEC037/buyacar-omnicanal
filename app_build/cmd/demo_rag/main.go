@@ -11,7 +11,7 @@ import (
 
 func main() {
 	fmt.Println("==================================================================")
-	fmt.Println("🚀 DEMOSTRACIÓN EN VIVO: MOTOR RAG LOCAL DE BUYACAR (Go 1.23)")
+	fmt.Println("[DEMOSTRACION EN VIVO] MOTOR RAG LOCAL DE BUYACAR (Go 1.23)")
 	fmt.Println("==================================================================")
 	fmt.Println()
 
@@ -21,12 +21,12 @@ func main() {
 	// Cargar fixtures normativos y catálogo de vehículos embebidos
 	chunks, err := rag.LoadEmbeddedFixtures(ctx, engine)
 	if err != nil {
-		fmt.Printf("❌ Error al cargar fixtures: %v\n", err)
+		fmt.Printf("[ERROR] Al cargar fixtures: %v\n", err)
 		return
 	}
 
-	fmt.Printf("✅ Motor RAG en memoria inicializado exitosamente.\n")
-	fmt.Printf("📚 Chunks indexados: %d fragmentos (BM25 + Cosine + Embeddings locales).\n\n", len(chunks))
+	fmt.Printf("[OK] Motor RAG en memoria inicializado exitosamente.\n")
+	fmt.Printf("[INFO] Chunks indexados: %d fragmentos (BM25 + Cosine + Embeddings locales).\n\n", len(chunks))
 
 	// Consultas de prueba representativas del concesionario
 	queries := []string{
@@ -39,7 +39,7 @@ func main() {
 
 	for i, qText := range queries {
 		fmt.Printf("------------------------------------------------------------------\n")
-		fmt.Printf("🔍 CONSULTA #%d: \"%s\"\n", i+1, qText)
+		fmt.Printf("[CONSULTA #%d] \"%s\"\n", i+1, qText)
 		fmt.Printf("------------------------------------------------------------------\n")
 
 		q := rag.Query{
@@ -53,12 +53,12 @@ func main() {
 		elapsed := time.Since(start)
 
 		if err != nil {
-			fmt.Printf("❌ Error en recuperación: %v\n", err)
+			fmt.Printf("[ERROR] En recuperación: %v\n", err)
 			continue
 		}
 
-		fmt.Printf("⚡ Latencia de recuperación: %v (SLA p99 < 5ms)\n", elapsed)
-		fmt.Printf("📑 Fragmentos semánticos más relevantes encontrados (%d):\n", len(results))
+		fmt.Printf("[METRICA] Latencia de recuperación: %v (SLA p99 < 5ms)\n", elapsed)
+		fmt.Printf("[RESULTADOS] Fragmentos semánticos más relevantes encontrados (%d):\n", len(results))
 
 		for j, r := range results {
 			fmt.Printf("\n   [Fragmento %d - Score: %.4f | Título: %s | Tokens: %d]\n", j+1, r.Score, r.Chunk.Title, r.Chunk.Tokens)
@@ -74,7 +74,7 @@ func main() {
 	}
 
 	fmt.Println("==================================================================")
-	fmt.Println("🛡️ VERIFICACIÓN DE GUARDRAILS ANTI-ALUCINACIÓN (CP5):")
+	fmt.Println("[VERIFICACION DE GUARDRAILS ANTI-ALUCINACION CP5]")
 	fmt.Println("==================================================================")
 	backed := engine.GetBackedNumbers()
 	fmt.Printf("Total de cifras numéricas (5+ dígitos) respaldadas por el RAG: %d\n", len(backed))
@@ -87,5 +87,5 @@ func main() {
 			break
 		}
 	}
-	fmt.Println("\n✅ Demostración completada: el RAG enriquece el contexto con datos 100% fácticos.")
+	fmt.Println("\n[OK] Demostración completada: el RAG enriquece el contexto con datos 100% fácticos.")
 }
