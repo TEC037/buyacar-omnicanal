@@ -1,0 +1,50 @@
+{
+  "conversation_id": "messenger-buyer-boyaca-99",
+  "channel_id": "messenger",
+  "operating_mode": "SIMULATION",
+  "checkpoints": [
+    {
+      "name": "lectura",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-05T17:07:27.5990331Z"
+    },
+    {
+      "name": "triage",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-05T17:07:27.5990341Z"
+    },
+    {
+      "name": "inventario",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-05T17:07:27.5990351Z"
+    },
+    {
+      "name": "respuesta",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-05T17:07:27.5990361Z"
+    },
+    {
+      "name": "guard",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-05T17:07:27.5990371Z"
+    },
+    {
+      "name": "envio",
+      "status": "ok",
+      "duration_ms": 0.645,
+      "timestamp_utc": "2026-11-05T17:07:27.5996785Z"
+    },
+    {
+      "name": "crm",
+      "status": "ok",
+      "duration_ms": 0,
+      "timestamp_utc": "2026-11-05T17:07:27.5996795Z"
+    }
+  ],
+  "total_duration_ms": 0.645
+}

@@ -96,6 +96,8 @@ type CopilotResponse struct {
 	RAGChunks        []string `json:"rag_chunks,omitempty"`
 	LatencyUs        int64    `json:"latency_us"`
 	TokensUsed       int      `json:"tokens_used"`
+	IntentScore      int      `json:"intent_score,omitempty"`
+	FunnelStage      string   `json:"funnel_stage,omitempty"`
 }
 
 // NewDashboardHandler construye un nuevo manejador del dashboard supervisor.
@@ -864,6 +866,8 @@ func (dh *DashboardHandler) handleN8NWebhook(w http.ResponseWriter, r *http.Requ
 			"customer_alias":          req.CustomerAlias,
 			"ad_title":                req.AdTitle,
 			"intent":                  cp.Intent,
+			"intent_score":            cp.IntentScore,
+			"funnel_stage":            cp.FunnelStage,
 			"provider_used":           cp.ProviderUsed,
 			"backed_numbers_verified": true,
 			"escalated":               cp.Escalated,

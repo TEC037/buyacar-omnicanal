@@ -455,6 +455,8 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 			provUsed = "gemini-2.5-flash"
 		}
 
+		intentScore, funnelStage := crm.CalculateIntentScore(req.Message, req.AdTitle, 1)
+
 		return server.CopilotResponse{
 			ChannelID:        req.ChannelID,
 			Intent:           string(cl.Intent),
@@ -468,6 +470,8 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 			RAGChunks:        ragTitles,
 			LatencyUs:        elapsedUs,
 			TokensUsed:       out.InputTokens + out.OutputTokens,
+			IntentScore:      intentScore,
+			FunnelStage:      string(funnelStage),
 		}, nil
 	})
 
