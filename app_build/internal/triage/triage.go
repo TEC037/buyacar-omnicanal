@@ -229,8 +229,8 @@ func Classify(raw string) Classification {
 		}
 	}
 
-	if norm == "hola" || norm == "buenos dias" || norm == "buenas tardes" || norm == "buenas noches" ||
-		containsAny(norm, "sigue disponible", "esta disponible", "todavia esta disponible", "hola sigue disponible") {
+	if norm == "hola" || norm == "buenos dias" || norm == "buen dia" || norm == "buenas tardes" || norm == "buenas noches" ||
+		containsAny(norm, "sigue disponible", "esta disponible", "todavia esta disponible", "hola sigue disponible", "hola buen dia", "hola buenos dias") {
 		return Classification{
 			NormalizedText: norm,
 			Intent:         IntentGreeting,
