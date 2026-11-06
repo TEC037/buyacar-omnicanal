@@ -228,7 +228,7 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		if chID == channel.ChannelIDInstagram {
 			subCh = instagramSub
 		}
-		wCtx, wCancel := context.WithTimeout(ctx, 2*time.Second)
+		wCtx, wCancel := context.WithTimeout(ctx, 10*time.Second)
 		defer wCancel()
 		sess, openErr := subCh.Open(wCtx, channel.Link{
 			ID:        "link-meta-" + chID,

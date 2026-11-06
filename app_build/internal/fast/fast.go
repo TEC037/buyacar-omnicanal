@@ -22,12 +22,12 @@ type BusinessTexts struct {
 // DefaultBusinessTexts retorna los textos verificados de BuyaCAR en Tunja con voz comercial colombiana.
 func DefaultBusinessTexts() BusinessTexts {
 	return BusinessTexts{
-		AddressReply:      "Estamos ubicados en Tunja, Boyacá: Av. Oriental - Cra. 6 #52-23, frente a la Toyota. ¡Nuestros vehículos certificados están listos para prueba de ruta!",
-		HoursReply:        "Nuestro horario de atención en Tunja es de Lunes a Sábado de 8:00 AM - 6:00 PM (jornada continua). Domingos no abrimos.",
-		ContactReply:      "Nuestras líneas oficiales de BuyaCAR son: WhatsApp exclusivo 3151212223 y teléfonos 3022866969 / 3160502717. ¡Confianza sobre ruedas!",
-		GreetingReply:     "¡Hola! Bienvenido a BuyaCAR en Tunja, confianza sobre ruedas. Contamos con vehículos certificados, manejamos todos los bancos y recibimos tu vehículo como parte de pago (permuta). ¿En qué te podemos asesorar hoy?",
-		CreditReply:       "En BuyaCAR tramitamos tu crédito vehicular con nuestros bancos aliados (Bancolombia, Sufi, Davivienda y Finandina). Ofrecemos simulación indicativa de cuota inicial según tu perfil. ¿A qué número de WhatsApp te compartimos los requisitos?",
-		SoldVehicleNotice: "Te contamos que el vehículo consultado ya fue vendido/separado, pero un asesor te contactará para ofrecerte opciones similares de nuestro inventario certificado.",
+		AddressReply:      "¡Con mucho gusto! En BuyaCAR te esperamos en nuestra vitrina principal en Tunja, Boyacá: Av. Oriental - Cra. 6 #52-23, frente a la Toyota. ¡Ven y hacemos prueba de ruta de tu próximo auto!",
+		HoursReply:        "¡Hola! Con todo gusto: en BuyaCAR Tunja atendemos de Lunes a Viernes de 8:00 AM a 6:00 PM (jornada continua) y los Sábados de 8:00 AM a 2:00 PM. Los Domingos descansamos. ¡Te esperamos!",
+		ContactReply:      "¡Hola! Claro que sí, con mucho gusto: comunícate a nuestra línea oficial de WhatsApp exclusiva 3151212223 o a nuestras líneas fijas de vitrina 3022866969 y 3160502717. ¡BuyaCAR, confianza sobre ruedas!",
+		GreetingReply:     "¡Hola! Qué gusto saludarte. Bienvenido a BuyaCAR en Tunja, confianza sobre ruedas. Contamos con vehículos certificados, manejamos todos los bancos y recibimos tu vehículo como parte de pago (permuta). ¿En qué te podemos asesorar hoy?",
+		CreditReply:       "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados (Bancolombia, Davivienda, Sufi y Finandina). Hacemos la simulación indicativa de tu cuota inicial según tu perfil. ¿A qué número de WhatsApp te contactamos para orientarte con los requisitos?",
+		SoldVehicleNotice: "¡Hola! Te contamos que el vehículo consultado ya fue vendido/separado, pero en BuyaCAR Tunja tenemos excelentes opciones similares en camionetas y autos certificados listos para entrega inmediata. ¿Te gustaría conocer las opciones disponibles?",
 	}
 }
 
@@ -137,19 +137,19 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {
 	switch intent {
 	case triage.IntentPrice:
-		return fmt.Sprintf("El %s %s modelo %d certificado tiene un precio de $%d COP (%d km, caja %s). Manejamos todos los bancos, listos para prueba de ruta en Tunja. ¿A qué número de WhatsApp te compartimos la ficha y coordinamos tu cita? (Línea oficial: 3151212223). Enlace: %s",
+		return fmt.Sprintf("¡Hola! Con mucho gusto: el %s %s modelo %d certificado cuenta con un excelente precio de $%d COP (%d km, transmisión %s). Recibimos tu vehículo en permuta y manejamos todos los bancos aliados. ¿A qué número de WhatsApp te compartimos más fotos y coordinamos tu prueba de ruta en Tunja? (Línea oficial: 3151212223). Más detalles: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.OfficialURL)
 	case triage.IntentMileage:
-		return fmt.Sprintf("El %s %s modelo %d cuenta con %d km verificados y precio de $%d COP. ¿Nos dejas tu WhatsApp para coordinar peritaje y prueba de ruta en Tunja? (WhatsApp 3151212223). Ficha: %s",
+		return fmt.Sprintf("¡Hola! Con todo gusto: el %s %s modelo %d tiene solo %d km verificados y garantizados, con un precio de $%d COP. ¿Te gustaría agendar una prueba de ruta en nuestra vitrina de Tunja? Escríbenos o déjanos tu WhatsApp (Línea directa: 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.MileageKm, v.PriceCOP, v.OfficialURL)
 	case triage.IntentDocs:
-		return fmt.Sprintf("El %s %s %d (placa terminada en %s) se entrega con SOAT y tecnomecánica al día. Precio: $%d COP. ¿A qué número de WhatsApp te enviamos copia de peritaje y documentos? (WhatsApp 3151212223). Ficha: %s",
+		return fmt.Sprintf("¡Claro que sí! El %s %s modelo %d (placa terminada en %s) se entrega con peritaje certificado de 150 puntos, SOAT y revisión tecnomecánica al día. Precio: $%d COP. ¿A qué número de WhatsApp te enviamos el historial completo? (WhatsApp 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PlateLastChar, v.PriceCOP, v.OfficialURL)
 	case triage.IntentVisit:
-		return fmt.Sprintf("Puedes ver y hacer prueba de ruta del %s %s %d ($%d COP, %d km) en nuestra vitrina de Tunja. ¿Cuál es tu número de WhatsApp para reservarte el espacio? (WhatsApp oficial 3151212223). Ficha: %s",
+		return fmt.Sprintf("¡Te esperamos con los brazos abiertos! Ven a conocer y hacer prueba de ruta del %s %s modelo %d ($%d COP, %d km) en nuestra sede de Tunja frente a la Toyota. ¿A qué WhatsApp te agendamos tu cita con un asesor? (WhatsApp oficial 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
 	default:
-		return fmt.Sprintf("Sí tenemos disponible el %s %s modelo %d ($%d COP, %d km, %s, motor %s, %s, color %s) en BuyaCAR Tunja. ¿A qué número de WhatsApp te contactamos para agendar peritaje? (WhatsApp 3151212223). Enlace: %s",
+		return fmt.Sprintf("¡Hola! Sí señor(a), tenemos disponible el %s %s modelo %d ($%d COP, %d km, caja %s, motor %s, tracción %s, color %s) 100%% certificado en BuyaCAR Tunja. ¿A qué número de WhatsApp te compartimos más detalles y agendamos tu prueba de manejo? (WhatsApp oficial: 3151212223). Enlace: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)
 	}
 }
