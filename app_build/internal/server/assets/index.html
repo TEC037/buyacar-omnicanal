@@ -5,229 +5,272 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BuyaCAR Supervisor Console — Wabi-Sabi Zen</title>
   <style>
-    /* Filosofía Wabi-Sabi: sobrio, cálido, silencioso, espacioso y sin saturación visual */
+    /* Filosofía Wabi-Sabi: sobrio, oscuro mate, sereno y estructurado */
     :root {
-      --bg-wabi: #121315;
-      --card-wabi: #181a1d;
-      --border-wabi: #272a30;
-      --text-main: #e2e4e9;
-      --text-muted: #8b909a;
+      --bg-wabi: #0f1012;
+      --card-wabi: #16181b;
+      --border-wabi: #25282e;
+      --text-main: #e6e8ec;
+      --text-muted: #8c919d;
       --accent: #5e81ac;
       --accent-soft: rgba(94, 129, 172, 0.12);
       --success: #88c0d0;
+      --warning: #ebcb8b;
+      --danger: #bf616a;
       --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg-wabi);
       color: var(--text-main);
       font-family: var(--font-stack);
-      line-height: 1.6;
-      padding: 40px 20px;
+      line-height: 1.5;
+      padding: 30px 20px;
       display: flex;
       justify-content: center;
     }
 
     .zen-container {
       width: 100%;
-      max-width: 680px;
+      max-width: 860px;
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 24px;
     }
 
     header {
-      text-align: center;
-      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-wabi);
     }
 
     .zen-title {
-      font-size: 1.4rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
       color: #f1f3f7;
-      margin-bottom: 6px;
     }
 
     .zen-subtitle {
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
-      font-weight: 400;
     }
 
+    .status-badge {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--accent-soft);
+      color: var(--success);
+      font-weight: 500;
+      border: 1px solid rgba(136, 192, 208, 0.2);
+    }
+
+    /* Tarjetas principales */
     .zen-card {
       background: var(--card-wabi);
       border: 1px solid var(--border-wabi);
       border-radius: 12px;
-      padding: 28px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
 
     .card-heading {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: #f1f3f7;
-      margin-bottom: 6px;
-    }
-
-    .card-desc {
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      margin-bottom: 22px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      background: #0d0e10;
-      border: 1px solid var(--border-wabi);
-      border-radius: 8px;
-      color: #ffffff;
-      padding: 12px 14px;
-      font-size: 0.92rem;
-      font-family: inherit;
-      transition: border-color 0.2s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .hint {
-      font-size: 0.76rem;
-      color: #6c727e;
-      margin-top: 6px;
-    }
-
-    .btn-save {
-      width: 100%;
-      background: var(--accent);
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      padding: 14px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: opacity 0.2s ease, transform 0.1s ease;
-    }
-
-    .btn-save:hover {
-      opacity: 0.92;
-    }
-
-    .btn-save:active {
-      transform: scale(0.99);
-    }
-
-    /* Estado de conexión sereno */
-    .status-panel {
+      margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
-      background: #15171a;
+    }
+
+    /* Métricas en cuadrícula elegante */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .metric-box {
+      background: #111215;
       border: 1px solid var(--border-wabi);
-      border-radius: 10px;
-      font-size: 0.86rem;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: var(--success);
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 8px;
-    }
-
-    .status-label {
-      color: var(--text-main);
+      border-radius: 8px;
+      padding: 16px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    .status-mode {
-      color: var(--success);
-      font-weight: 500;
-      background: var(--accent-soft);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.78rem;
+    .metric-title {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    /* Vista avanzada discreta (colapsable) */
-    details {
+    .metric-val {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    .metric-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Tabla de Errores y Alertas */
+    .table-container {
+      overflow-x: auto;
       margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-wabi);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #1a1c20;
+      color: var(--text-main);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 24px 0;
+      font-style: italic;
+    }
+
+    .pill-ok {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      background: rgba(136, 192, 208, 0.15);
+      color: var(--success);
+    }
+
+    .pill-err {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      background: rgba(191, 97, 106, 0.15);
+      color: var(--danger);
+    }
+
+    /* Controles seguros */
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-wabi);
+    }
+
+    .btn-action {
+      background: #1e2126;
+      border: 1px solid var(--border-wabi);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background: #282c34;
+    }
+
+    .btn-danger {
+      background: rgba(191, 97, 106, 0.2);
+      border-color: rgba(191, 97, 106, 0.4);
+      color: #ff8b94;
+    }
+
+    .btn-danger:hover {
+      background: rgba(191, 97, 106, 0.35);
+    }
+
+    /* Ajustes plegables de conexión */
+    details {
+      margin-top: 12px;
       font-size: 0.84rem;
       color: var(--text-muted);
     }
 
     summary {
       cursor: pointer;
-      padding: 10px 0;
+      padding: 8px 0;
       user-select: none;
-      outline: none;
       color: #7b828f;
       transition: color 0.2s;
     }
 
-    summary:hover {
-      color: var(--text-main);
+    summary:hover { color: var(--text-main); }
+
+    .form-group {
+      margin-bottom: 12px;
     }
 
-    .advanced-box {
-      margin-top: 12px;
-      padding: 16px;
-      background: #111214;
+    label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      background: #0d0e10;
       border: 1px solid var(--border-wabi);
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 10px 12px;
+      font-size: 0.86rem;
+      font-family: inherit;
     }
 
     .toast {
       position: fixed;
-      bottom: 30px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       background: #23272e;
       color: #e5e9f0;
       border: 1px solid #3b4252;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 0.86rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      padding: 10px 22px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       display: none;
-      animation: fadeIn 0.3s;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, 10px); }
-      to { opacity: 1; transform: translate(-50%, 0); }
     }
   </style>
 </head>
@@ -235,62 +278,110 @@
 
   <div class="zen-container">
     <header>
-      <div class="zen-title">BuyaCAR · Tunja</div>
-      <div class="zen-subtitle">Canales de Facebook Marketplace y WhatsApp en calma</div>
+      <div>
+        <div class="zen-title">BuyaCAR · Centro de Supervisión</div>
+        <div class="zen-subtitle">Métricas en tiempo real, control seguro y registro de alertas</div>
+      </div>
+      <div class="status-badge" id="lbl-operating-mode">AUTOPILOT ACTIVO</div>
     </header>
 
-    <!-- Estado del sistema -->
-    <div class="status-panel">
-      <div class="status-label">
-        <span class="status-dot"></span>
-        <span id="txt-status">Servidor local activo</span>
-      </div>
-      <div class="status-mode" id="txt-mode">Modo: AUTOPILOT</div>
-    </div>
-
-    <!-- Tarjeta Principal de Configuración Seria y Limpia -->
+    <!-- 1. Cuadrícula de Métricas Clave del Proceso -->
     <div class="zen-card">
-      <div class="card-heading">Conexión con Meta / Marketplace</div>
-      <div class="card-desc">Ingresa únicamente las dos claves de tu página para empezar a responder.</div>
-
-      <div class="form-group">
-        <label for="meta-access-token">Identificador de Acceso (Token de Página)</label>
-        <input id="meta-access-token" type="password" placeholder="Pega aquí el token que generaste (EAAx...)" autocomplete="off" />
-        <div class="hint">Lo copiaste al presionar "Generar identificador" en Meta Developers.</div>
+      <div class="card-heading">
+        <span>Métricas Operativas del Negocio</span>
+        <button onclick="refreshData()" class="btn-action">Actualizar</button>
       </div>
-
-      <div class="form-group">
-        <label for="meta-app-secret">Clave Secreta de la App (App Secret)</label>
-        <input id="meta-app-secret" type="password" placeholder="Pega aquí la clave secreta de tu aplicación en Meta" autocomplete="off" />
-        <div class="hint">Se encuentra en: Configuración de la app &gt; Básica &gt; Clave secreta.</div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <span class="metric-title">Mensajes Atendidos</span>
+          <span class="metric-val" id="val-total-msgs">0</span>
+          <span class="metric-sub">Facebook y Marketplace</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-title">Velocidad Fast-Path</span>
+          <span class="metric-val" id="val-latency">&lt; 1 ms</span>
+          <span class="metric-sub">Respuesta inmediata</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-title">Alertas / Escalamientos</span>
+          <span class="metric-val" id="val-escalations" style="color:#88c0d0;">0</span>
+          <span class="metric-sub">Casos derivados a vitrina</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-title">Canales Saludables</span>
+          <span class="metric-val" id="val-channels-status" style="color:#88c0d0;">4 / 4</span>
+          <span class="metric-sub">Sin bloqueos de tasa</span>
+        </div>
       </div>
-
-      <button onclick="saveZenConfig()" class="btn-save" id="btn-save">Guardar y Activar Conexión</button>
     </div>
 
-    <!-- Ajustes Opcionales Desplegables (Ocultos por defecto para mantener la paz visual) -->
-    <details>
-      <summary>Ajustes técnicos adicionales (opcional)</summary>
-      <div class="advanced-box">
-        <div class="form-group">
-          <label for="meta-page-id">ID de la Página</label>
-          <input id="meta-page-id" type="text" value="105065872473896" />
-        </div>
-        <div class="form-group">
-          <label for="meta-verify-token">Token de Verificación del Webhook</label>
-          <input id="meta-verify-token" type="text" value="buyacar_token_secreto_2026" />
-        </div>
-        <div class="form-group">
-          <label for="gemini-api-key">Gemini API Key (Opcional para respuestas no estructuradas)</label>
-          <input id="gemini-api-key" type="password" placeholder="AIzaSy... (Opcional)" />
-        </div>
+    <!-- 2. Registro de Errores, Fallos y Escalamientos (escalate.Queue) -->
+    <div class="zen-card">
+      <div class="card-heading">
+        <span>Registro de Alertas y Escalamientos</span>
+        <span id="badge-escalate-count" class="pill-ok">0 pendientes</span>
       </div>
-    </details>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora (UTC)</th>
+              <th>Canal</th>
+              <th>Motivo / Diagnóstico</th>
+              <th>Contexto Protegido (Ley 1581)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-escalations">
+            <tr><td colspan="4" class="empty-state">No hay errores ni alertas registradas en el sistema. Todo marcha con serenidad.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. Controles Seguros de la Aplicación -->
+    <div class="zen-card">
+      <div class="card-heading">
+        <span>Control Seguro y Modo Operativo</span>
+      </div>
+      <div style="font-size:0.84rem; color:var(--text-muted); line-height:1.6;">
+        Puedes alternar entre modo autónomo (AUTOPILOT) o modo supervisado con revisión humana (DRAFT), o activar el interruptor de emergencia (Kill Switch) en caso de contingencia.
+      </div>
+
+      <div class="controls-row">
+        <div style="display:flex; gap:8px;">
+          <button onclick="setMode('AUTOPILOT')" class="btn-action" style="color:var(--success);border-color:rgba(136,192,208,0.3);">Modo AUTOPILOT</button>
+          <button onclick="setMode('DRAFT')" class="btn-action">Modo DRAFT (Supervisado)</button>
+        </div>
+        <button id="btn-killswitch" onclick="toggleKillSwitch()" class="btn-action btn-danger">Activar Kill Switch (Pausar Todo)</button>
+      </div>
+
+      <!-- Credenciales desplegables de Meta (ocultas por defecto para evitar saturación) -->
+      <details style="margin-top:18px;">
+        <summary>Actualizar credenciales de Meta y WhatsApp en caliente</summary>
+        <div style="margin-top:12px; background:#111215; padding:16px; border-radius:8px; border:1px solid var(--border-wabi);">
+          <div class="form-group">
+            <label for="meta-access-token">Identificador de Acceso (Page Token)</label>
+            <input id="meta-access-token" type="password" placeholder="EAAx..." />
+          </div>
+          <div class="form-group">
+            <label for="meta-app-secret">Clave Secreta de la App (App Secret)</label>
+            <input id="meta-app-secret" type="password" placeholder="Clave secreta de Meta Developers" />
+          </div>
+          <div class="form-group">
+            <label for="meta-verify-token">Verify Token</label>
+            <input id="meta-verify-token" type="text" value="buyacar-verify-sim" />
+          </div>
+          <button onclick="saveCredentials()" class="btn-action" style="width:100%; background:var(--accent); color:#fff; border:none; margin-top:6px;">Actualizar Credenciales</button>
+        </div>
+      </details>
+    </div>
   </div>
 
   <div id="toast" class="toast"></div>
 
   <script>
+    let killSwitchActive = false;
+
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.innerText = msg;
@@ -298,71 +389,132 @@
       setTimeout(() => { t.style.display = 'none'; }, 3200);
     }
 
-    async function saveZenConfig() {
-      const btn = document.getElementById('btn-save');
+    async function refreshData() {
+      try {
+        const [statusRes, escRes] = await Promise.all([
+          fetch('/api/status'),
+          fetch('/api/escalations')
+        ]);
+
+        if (statusRes.ok) {
+          const s = await statusRes.json();
+          document.getElementById('lbl-operating-mode').innerText = s.operating_mode ? (s.operating_mode + ' ACTIVO') : 'OPERACIONAL';
+
+          // Mensajes totales
+          let totalMsgs = 0;
+          if (s.metrics && s.metrics.channels_messages_total) {
+            for (const ch in s.metrics.channels_messages_total) {
+              totalMsgs += s.metrics.channels_messages_total[ch] || 0;
+            }
+          }
+          document.getElementById('val-total-msgs').innerText = totalMsgs;
+
+          // Latencia Fast-path
+          if (s.metrics && s.metrics.fast_path_p95_us) {
+            const ms = (s.metrics.fast_path_p95_us / 1000).toFixed(1);
+            document.getElementById('val-latency').innerText = ms + ' ms';
+          }
+
+          // Canales activos
+          if (s.channels) {
+            const active = s.channels.filter(c => !c.paused).length;
+            document.getElementById('val-channels-status').innerText = `${active} / ${s.channels.length}`;
+          }
+        }
+
+        if (escRes.ok) {
+          const tickets = await escRes.json();
+          const count = tickets ? tickets.length : 0;
+          document.getElementById('val-escalations').innerText = count;
+          const badge = document.getElementById('badge-escalate-count');
+          badge.innerText = `${count} pendientes`;
+          badge.className = count > 0 ? 'pill-err' : 'pill-ok';
+
+          const tbody = document.getElementById('tbody-escalations');
+          if (!tickets || tickets.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No hay errores ni alertas registradas en el sistema. Todo marcha con serenidad.</td></tr>';
+          } else {
+            tbody.innerHTML = tickets.map(t => {
+              const date = t.CreatedAt ? new Date(t.CreatedAt).toLocaleTimeString() : '-';
+              return `<tr>
+                <td>${date}</td>
+                <td><span class="pill-ok">${t.ChannelID || 'general'}</span></td>
+                <td style="color:#ff8b94;font-weight:500;">${t.Reason || 'alerta'}</td>
+                <td style="color:#a0aab8;font-family:monospace;font-size:0.78rem;">${t.RedactedContext || '-'}</td>
+              </tr>`;
+            }).join('');
+          }
+        }
+      } catch (e) {
+        showToast('Error sincronizando métricas');
+      }
+    }
+
+    async function setMode(mode) {
+      try {
+        const res = await fetch('/api/mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: mode })
+        });
+        if (res.ok) {
+          showToast(`Modo cambiado a ${mode}`);
+          refreshData();
+        }
+      } catch (e) {
+        showToast('No se pudo cambiar el modo');
+      }
+    }
+
+    async function toggleKillSwitch() {
+      killSwitchActive = !killSwitchActive;
+      try {
+        const res = await fetch('/api/killswitch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ active: killSwitchActive })
+        });
+        if (res.ok) {
+          const btn = document.getElementById('btn-killswitch');
+          if (killSwitchActive) {
+            btn.innerText = 'Desactivar Kill Switch (Reanudar)';
+            btn.style.background = '#88c0d0';
+            btn.style.color = '#000';
+            showToast('Kill Switch activado: bot pausado');
+          } else {
+            btn.innerText = 'Activar Kill Switch (Pausar Todo)';
+            btn.style.background = '';
+            btn.style.color = '';
+            showToast('Sistema reanudado con éxito');
+          }
+        }
+      } catch (e) {
+        showToast('Error al conmutar Kill Switch');
+      }
+    }
+
+    async function saveCredentials() {
       const token = document.getElementById('meta-access-token').value.trim();
       const secret = document.getElementById('meta-app-secret').value.trim();
-      const pageId = document.getElementById('meta-page-id').value.trim() || '105065872473896';
-      const verify = document.getElementById('meta-verify-token').value.trim() || 'buyacar_token_secreto_2026';
-      const gemini = document.getElementById('gemini-api-key').value.trim();
-
-      if (!token && !secret) {
-        showToast('Por favor pega el token o la clave secreta para guardar');
-        return;
-      }
-
-      btn.innerText = 'Guardando...';
-      btn.style.opacity = '0.7';
-
+      const verify = document.getElementById('meta-verify-token').value.trim() || 'buyacar-verify-sim';
       try {
         const res = await fetch('/api/meta/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page_id: pageId, access_token: token, app_secret: secret, verify_token: verify })
+          body: JSON.stringify({ page_id: '105065872473896', access_token: token, app_secret: secret, verify_token: verify })
         });
-
-        if (gemini) {
-          await fetch('/api/gemini/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ api_key: gemini })
-          });
-        }
-
         if (res.ok) {
-          showToast('Credenciales guardadas y activas en el bot');
-          btn.innerText = 'Conexión Establecida';
-          btn.style.background = '#88c0d0';
-          setTimeout(() => {
-            btn.innerText = 'Guardar y Activar Conexión';
-            btn.style.background = 'var(--accent)';
-            btn.style.opacity = '1';
-          }, 3000);
+          showToast('Credenciales actualizadas en el bot');
         } else {
-          showToast('Hubo un inconveniente al registrar las claves');
-          btn.innerText = 'Guardar y Activar Conexión';
-          btn.style.opacity = '1';
+          showToast('Inconveniente al actualizar credenciales');
         }
       } catch (e) {
-        showToast('Error de conexión local con el servidor');
-        btn.innerText = 'Guardar y Activar Conexión';
-        btn.style.opacity = '1';
+        showToast('Error de red');
       }
     }
 
-    async function loadStatus() {
-      try {
-        const res = await fetch('/api/status');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.operating_mode) {
-            document.getElementById('txt-mode').innerText = 'Modo: ' + data.operating_mode;
-          }
-        }
-      } catch (e) {}
-    }
-
-    loadStatus();
+    refreshData();
+    setInterval(refreshData, 8000);
   </script>
 </body>
 </html>
