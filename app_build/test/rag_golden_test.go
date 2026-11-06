@@ -329,12 +329,12 @@ func TestRAGGolden_CreditRequirements(t *testing.T) {
 	if !strings.Contains(contentCombined, "Bancolombia") || !strings.Contains(contentCombined, "Davivienda") {
 		t.Fatalf("expected allied banks in credit chunks: %s", contentCombined)
 	}
-	if !strings.Contains(contentCombined, "10%") {
-		t.Fatalf("expected 10%% down payment requirement in credit chunks: %s", contentCombined)
+	if !strings.Contains(contentCombined, "cuota inicial") {
+		t.Fatalf("expected cuota inicial in credit chunks: %s", contentCombined)
 	}
 
 	// Ejecución en Pipeline E2E
-	validReply := "Financiación desde 10% de cuota inicial con Bancolombia, Davivienda y Finandina. Empleados: certificación laboral y nóminas. Independientes: RUT y extractos. WhatsApp 3151212223. https://buyacar.com.co/credito"
+	validReply := "Simulación indicativa de cuota inicial según perfil con Bancolombia, Davivienda y Finandina. Empleados: certificación laboral y nóminas. Independientes: RUT y extractos. WhatsApp 3151212223. https://buyacar.com.co/credito"
 	aiProv := newGoldenMockAIProvider(makeAIResponseJSON(validReply, "complex_query", false, ""))
 	pipe, waStub, sess, _, _ := setupGoldenPipeline(t, aiProv, ragEng, now)
 
@@ -385,14 +385,14 @@ func TestRAGGolden_FAQBoyacaTunja(t *testing.T) {
 		t.Fatalf("expected 150 points peritaje in FAQ chunks: %s", contentCombined)
 	}
 
-	// Ejecución en Pipeline E2E con abono de separación ($2.000.000 / 2000000 COP) respaldado
-	validReply := "Atendemos en Tunja de lunes a sábado de 8:00 am a 6:00 pm en la Av. Universitaria # 45-12. Peritaje de 150 puntos y avalúo en 45 minutos. Separa con 2000000 COP. Info https://buyacar.com.co/faq"
+	// Ejecución en Pipeline E2E con teléfonos de contacto oficiales respaldados (3151212223 / 3022866969)
+	validReply := "Atendemos en Tunja de lunes a sábado de 8:00 am a 6:00 pm frente a la Toyota. Peritaje de 150 puntos y avalúo en 45 minutos. Llámanos al 3022866969 o WhatsApp 3151212223. Info https://buyacar.com.co/faq"
 	aiProv := newGoldenMockAIProvider(makeAIResponseJSON(validReply, "complex_query", false, ""))
 	pipe, waStub, sess, _, _ := setupGoldenPipeline(t, aiProv, ragEng, now)
 
 	conv := channel.Conversation{ID: "conv-golden-faq-01", ChannelID: "whatsapp", CustomerAlias: "Cliente_FAQ", UpdatedAt: now}
 	waStub.SeedThread(conv, []channel.Message{
-		{ID: "m1", Sender: "customer", Text: "¿Cómo es el proceso de revisión pericial de 150 puntos y con cuánto dinero se separa una unidad?", Timestamp: now.Add(-1 * time.Minute)},
+		{ID: "m1", Sender: "customer", Text: "¿Cómo es el proceso de revisión pericial de 150 puntos y cuáles son las líneas de contacto?", Timestamp: now.Add(-1 * time.Minute)},
 	})
 
 	outcome, err := pipe.ProcessConversation(ctx, waStub, sess, conv, now)
@@ -400,10 +400,10 @@ func TestRAGGolden_FAQBoyacaTunja(t *testing.T) {
 		t.Fatalf("pipeline failure: %v", err)
 	}
 	if outcome.Escalated {
-		t.Fatalf("expected FAQ reply with backed separation number 2000000 to be approved, got escalation: %s", outcome.EscalationReason)
+		t.Fatalf("expected FAQ reply with backed numbers to be approved, got escalation: %s", outcome.EscalationReason)
 	}
-	if !strings.Contains(outcome.SentReply, "2000000") {
-		t.Fatalf("expected 2000000 in sent reply, got: %s", outcome.SentReply)
+	if !strings.Contains(outcome.SentReply, "3022866969") {
+		t.Fatalf("expected 3022866969 in sent reply, got: %s", outcome.SentReply)
 	}
 }
 
@@ -413,8 +413,8 @@ func TestRAGGolden_AntiHallucinationEnforcement(t *testing.T) {
 	now := time.Date(2026, 10, 29, 14, 0, 0, 0, time.UTC)
 	ragEng := loadIndexedGoldenRAG(t)
 
-	// Caso A: Cifras respaldadas en RAG (20000 km, 72000000 precio, 2000000 separación) pasan
-	backedReply := "Garantía de 20000 km, separación de 2000000 COP y vehículo a 72000000 COP. WhatsApp 3151212223. https://buyacar.com.co/garantia"
+	// Caso A: Cifras respaldadas en RAG (20000 km, 72000000 precio, 3022866969 telefono) pasan
+	backedReply := "Garantía de 20000 km, vehículo a 72000000 COP y teléfono 3022866969. WhatsApp 3151212223. https://buyacar.com.co/garantia"
 	aiProvBacked := newGoldenMockAIProvider(makeAIResponseJSON(backedReply, "complex_query", false, ""))
 	pipeBacked, waStubBacked, sessBacked, _, _ := setupGoldenPipeline(t, aiProvBacked, ragEng, now)
 
@@ -438,7 +438,7 @@ func TestRAGGolden_AntiHallucinationEnforcement(t *testing.T) {
 
 	convB := channel.Conversation{ID: "conv-unbacked-block", ChannelID: "whatsapp", CustomerAlias: "Cliente_B", UpdatedAt: now}
 	waStubUnbacked.SeedThread(convB, []channel.Message{
-		{ID: "m1", Sender: "customer", Text: "¿Tienen opciones de financiación y precio especial para este automotor?", Timestamp: now.Add(-1 * time.Minute)},
+		{ID: "m1", Sender: "customer", Text: "¿Qué políticas de garantía y precio especial aplican para este automotor?", Timestamp: now.Add(-1 * time.Minute)},
 	})
 
 	outB, err := pipeUnbacked.ProcessConversation(ctx, waStubUnbacked, sessUnbacked, convB, now)

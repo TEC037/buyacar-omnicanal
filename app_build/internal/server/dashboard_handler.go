@@ -883,7 +883,7 @@ func (dh *DashboardHandler) handleCRMDecision(w http.ResponseWriter, r *http.Req
 	}
 	var body struct {
 		CustomerID string `json:"customer_id"`
-		Decision   string `json:"decision"` // "agendar_cita", "aprobar_descuento", "asignar_asesor", "cerrar_reserva"
+		Decision   string `json:"decision"` // "agendar_cita", "aprobar_descuento", "asignar_asesor"
 		Note       string `json:"note"`
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&body); err != nil {
@@ -907,8 +907,6 @@ func (dh *DashboardHandler) handleCRMDecision(w http.ResponseWriter, r *http.Req
 				lead.AppointmentTime = &t
 			case "aprobar_descuento", "asignar_asesor":
 				lead.Stage = crm.StageNegotiation
-			case "cerrar_reserva":
-				lead.Stage = crm.StageClosedWon
 			}
 			if body.Note != "" {
 				lead.Notes = append(lead.Notes, body.Note)

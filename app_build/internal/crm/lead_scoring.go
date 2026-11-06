@@ -16,7 +16,6 @@ const (
 	StageQualified     FunnelStage = "calificado"         // Intención clara, presupuesto y vehículo
 	StageAppointment   FunnelStage = "cita_peritaje"      // Agendamiento de prueba de ruta en Tunja
 	StageNegotiation   FunnelStage = "negociacion_humana" // Escalamiento comercial por retoma/regateo
-	StageClosedWon     FunnelStage = "cierre_reserva"     // Vehículo separado o reservado
 	StageDiscarded     FunnelStage = "descartado"         // Sin coincidencia o inviable
 )
 
@@ -88,7 +87,7 @@ func CalculateIntentScore(text, adTitle string, priorInteractions int) (int, Fun
 	if strings.Contains(norm, "verlo") || strings.Contains(norm, "cita") || strings.Contains(norm, "visita") || strings.Contains(norm, "prueba de ruta") || strings.Contains(norm, "ir a tunja") {
 		score += 35
 	}
-	if strings.Contains(norm, "separar") || strings.Contains(norm, "reservar") || strings.Contains(norm, "comprar") {
+	if strings.Contains(norm, "comprar") {
 		score += 40
 	}
 

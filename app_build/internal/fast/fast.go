@@ -15,6 +15,7 @@ type BusinessTexts struct {
 	HoursReply        string
 	ContactReply      string
 	GreetingReply     string
+	CreditReply       string
 	SoldVehicleNotice string
 }
 
@@ -22,9 +23,10 @@ type BusinessTexts struct {
 func DefaultBusinessTexts() BusinessTexts {
 	return BusinessTexts{
 		AddressReply:      "Estamos ubicados en Tunja, Boyacá: Av. Oriental - Cra. 6 #52-23, frente a la Toyota. ¡Nuestros vehículos certificados están listos para prueba de ruta!",
-		HoursReply:        "Nuestro horario de atención en Tunja es de Lunes a Viernes de 8:00 AM - 6:00 PM y Sábados de 8:00 AM - 2:00 PM. Te brindamos asesoría personalizada.",
+		HoursReply:        "Nuestro horario de atención en Tunja es de Lunes a Sábado de 8:00 AM - 6:00 PM (jornada continua). Domingos no abrimos.",
 		ContactReply:      "Nuestras líneas oficiales de BuyaCAR son: WhatsApp exclusivo 3151212223 y teléfonos 3022866969 / 3160502717. ¡Confianza sobre ruedas!",
 		GreetingReply:     "¡Hola! Bienvenido a BuyaCAR en Tunja, confianza sobre ruedas. Contamos con vehículos certificados, manejamos todos los bancos y recibimos tu vehículo como parte de pago (permuta). ¿En qué te podemos asesorar hoy?",
+		CreditReply:       "En BuyaCAR tramitamos tu crédito vehicular con nuestros bancos aliados (Bancolombia, Sufi, Davivienda y Finandina). Ofrecemos simulación indicativa de cuota inicial según tu perfil. ¿A qué número de WhatsApp te compartimos los requisitos?",
 		SoldVehicleNotice: "Te contamos que el vehículo consultado ya fue vendido/separado, pero un asesor te contactará para ofrecerte opciones similares de nuestro inventario certificado.",
 	}
 }
@@ -80,6 +82,8 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 		return Result{Handled: true, Reply: e.texts.ContactReply, InventoryStatus: inventory.StatusVehicleNotRequired}
 	case triage.IntentGreeting:
 		return Result{Handled: true, Reply: e.texts.GreetingReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+	case triage.IntentCreditGeneral:
+		return Result{Handled: true, Reply: e.texts.CreditReply, InventoryStatus: inventory.StatusVehicleNotRequired}
 	}
 
 	// Consulta de inventario

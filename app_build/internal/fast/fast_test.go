@@ -26,8 +26,15 @@ func TestFastPath_GoldenCasesAndEscalation(t *testing.T) {
 	// GC-002: Horario
 	cl = triage.Classify("¿Qué horario de atención tienen los sábados?")
 	res = eng.Evaluate(ctx, cl, cache, now)
-	if !res.Handled || !strings.Contains(res.Reply, "8:00 AM - 2:00 PM") {
-		t.Fatalf("expected hours reply, got %+v", res)
+	if !res.Handled || !strings.Contains(res.Reply, "Lunes a Sábado de 8:00 AM - 6:00 PM") || !strings.Contains(res.Reply, "Domingos no abrimos") {
+		t.Fatalf("expected hours reply with Lunes a Sábado and Domingos no abrimos, got %+v", res)
+	}
+
+	// Orientación de Crédito General
+	cl = triage.Classify("¿Cómo es la financiación y cuota inicial para comprar carro?")
+	res = eng.Evaluate(ctx, cl, cache, now)
+	if !res.Handled || !strings.Contains(res.Reply, "bancos aliados") || !strings.Contains(res.Reply, "cuota inicial") {
+		t.Fatalf("expected credit orientation reply, got %+v", res)
 	}
 
 	// GC-003: WhatsApp oficial

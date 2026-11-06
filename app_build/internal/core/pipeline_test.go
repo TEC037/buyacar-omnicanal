@@ -741,7 +741,7 @@ func TestPipeline_CP4_RAGTokenBudgetCompliance(t *testing.T) {
 
 	conv := channel.Conversation{ID: "conv-rag-budget", ChannelID: "whatsapp", CustomerAlias: "Cliente_Budget", UpdatedAt: now}
 	waStub.SeedThread(conv, []channel.Message{
-		{ID: "m1", Sender: "customer", Text: "¿Cuáles son las condiciones y requisitos de crédito vehicular en detalle?", Timestamp: now.Add(-1 * time.Minute)},
+		{ID: "m1", Sender: "customer", Text: "¿Cuáles son las políticas de peritaje y requisitos de revisión técnica en detalle?", Timestamp: now.Add(-1 * time.Minute)},
 	})
 
 	sess, _ := waStub.Open(ctx, channel.Link{ID: "l1", URL: "https://buyacar.com.co/wa", Active: true})

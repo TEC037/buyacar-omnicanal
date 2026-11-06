@@ -22,6 +22,7 @@ const (
 	IntentSpecs        Intent = "specs" // transmision, motor, traccion, color, carroceria
 	IntentDocs         Intent = "docs"  // SOAT, tecnomecanica, placa
 	IntentVisit        Intent = "visit_or_test_drive"
+	IntentCreditGeneral Intent = "credit_general"
 
 	// Intenciones dificiles o de escalamiento obligatorio (paso 10 del flujo)
 	IntentDiscount     Intent = "discount_or_min_price"
@@ -121,7 +122,17 @@ func Classify(raw string) Classification {
 	}
 
 	// 3. Intenciones faciles sin requerir vehiculo especifico
-	isPolicyOrWorkshopQuery := containsAny(norm, "garantia", "taller", "talleres", "credito", "requisitos", "bancos", "cuota inicial", "peritaje", "traspaso", "financiacion")
+	if containsAny(norm, "credito", "financiacion", "cuota inicial", "bancos", "financian") && !containsAny(norm, "datacredito", "reportado", "centrales de riesgo") && q.Brand == "" && q.Model == "" {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentCreditGeneral,
+			Confidence:     0.95,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+
+	isPolicyOrWorkshopQuery := containsAny(norm, "garantia", "taller", "talleres", "requisitos", "peritaje", "traspaso")
 	if !isPolicyOrWorkshopQuery && containsAny(norm, "donde quedan", "ubicados", "ubicacion", "direccion", "como llego", "vitrina") && q.Brand == "" && q.Model == "" {
 		return Classification{
 			NormalizedText: norm,

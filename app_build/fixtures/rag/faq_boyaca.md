@@ -4,7 +4,7 @@ Respuestas oficiales a las dudas más comunes de nuestros clientes sobre compra,
 
 ## Horarios de Atención y Ubicación de Sedes
 - ¿Cuáles son los horarios de atención al público?
-  Atendemos de lunes a viernes de 8:00 am a 6:00 pm en jornada continua y sábados de 8:00 am a 2:00 pm (con atención extendida hasta las 6:00 pm y domingos/festivos mediante cita previa coordinada a través de nuestros canales digitales).
+  Atendemos de lunes a sábado de 8:00 am a 6:00 pm en jornada continua. Domingos no abrimos.
 - ¿Dónde está ubicada la vitrina principal en Boyacá?
   Nuestra vitrina comercial principal en Tunja, Boyacá se encuentra en la Av. Oriental - Cra. 6 # 52-23, frente a la Toyota (con punto de atención y peritaje aliado en el corredor de la Avenida Universitaria # 45-12, frente a Unicentro Tunja).
 - ¿Cuáles son las líneas telefónicas directas?
@@ -30,9 +30,7 @@ Respuestas oficiales a las dudas más comunes de nuestros clientes sobre compra,
 - ¿Cómo se entregan los impuestos?
   Todos los vehículos se entregan con paz y salvo del impuesto sobre vehículos automotores de la Gobernación de Boyacá del año en curso.
 
-## Medios de Pago y Separación de Vehículos
-- ¿Con cuánto dinero puedo separar un vehículo de interés?
-  Puede realizar la separación formal de cualquier vehículo de nuestro inventario con un abono desde $2.000.000 COP (2000000), congelando el precio y retirando la unidad de exhibición pública durante 5 días hábiles mientras se legaliza el desembolso o pago final.
+## Medios de Pago y Compra de Vehículos
 - ¿Qué medios de pago se reciben?
   Aceptamos transferencias bancarias a cuentas oficiales de BuyaCAR (Bancolombia, Davivienda), cheques de gerencia y desembolsos directos de entidades financieras aliadas.
 Más información y portal oficial: https://buyacar.com.co/faq

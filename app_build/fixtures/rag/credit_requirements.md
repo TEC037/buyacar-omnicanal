@@ -18,11 +18,11 @@ Las personas naturales independientes, contratistas y comerciantes formales debe
 4. Certificado de existencia y representación legal de Cámara de Comercio con expedición no mayor a 30 días (para propietarios de establecimientos de comercio).
 5. Declaración de renta del último período gravable con su correspondiente soporte de pago o recibo oficial de presentación.
 
-## Condiciones Financieras y Cuota Inicial
-BuyaCAR ofrece planes de financiación vehicular con las siguientes condiciones preferenciales:
-1. Cuota inicial: desde el diez por ciento (10%) del valor total de venta del vehículo, sujeta al puntaje en centrales de riesgo (Datacrédito y TransUnion / CIFIN).
+## Condiciones Financieras y Crédito Vehicular
+BuyaCAR gestiona tu crédito vehicular con las siguientes condiciones preferenciales:
+1. Simulación indicativa de cuota inicial según el perfil crediticio y capacidad de pago con bancos aliados.
 2. Plazo de financiación: desde 12 meses hasta 72 meses según el año de modelo del automotor.
-3. Posibilidad de financiación hasta del cien por ciento (100%) para clientes con excelente perfil crediticio y capacidad de endeudamiento comprobada.
+3. Posibilidad de financiación amplia para clientes con perfil crediticio verificado.
 4. Seguro todo riesgo financiado dentro de la cuota mensual.
 
 ## Bancos Aliados y Tiempos de Respuesta
