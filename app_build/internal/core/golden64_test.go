@@ -43,7 +43,7 @@ func build64GoldenCases() []GoldenCase {
 		{12, "A_FastPath", "Telefono o WhatsApp de BuyaCAR", true, false, "3151212223"},
 		{13, "A_FastPath", "Hola", true, false, "confianza sobre ruedas"},
 		{14, "A_FastPath", "Buenos dias", true, false, "vehículos certificados"},
-		{15, "A_FastPath", "Buenas tardes", true, false, "manejamos todos los bancos"},
+		{15, "A_FastPath", "Buenas tardes", true, false, "todos los bancos"},
 		{16, "A_FastPath", "Buenas noches", true, false, "parte de pago (permuta)"},
 
 		// Suite B: Inventario Verificado (16 casos: 17..32)

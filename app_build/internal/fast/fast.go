@@ -20,16 +20,22 @@ type BusinessTexts struct {
 	SoldVehicleNotice string
 }
 
-// DefaultBusinessTexts retorna los textos verificados de BuyaCAR en Tunja con voz comercial colombiana.
+// DefaultBusinessTexts retorna los textos verificados de BuyaCAR en Tunja con voz comercial colombiana y diseño limpio sin emoticonos.
 func DefaultBusinessTexts() BusinessTexts {
 	return BusinessTexts{
-		AddressReply:      "¡Con mucho gusto! En BuyaCAR te esperamos en nuestra vitrina principal en Tunja, Boyacá: Av. Oriental - Cra. 6 #52-23, frente a la Toyota. ¡Ven y hacemos prueba de ruta de tu próximo auto!",
-		HoursReply:        "¡Hola! Con todo gusto: en BuyaCAR Tunja atendemos de Lunes a Viernes de 8:00 AM a 6:00 PM (jornada continua) y los Sábados de 8:00 AM a 2:00 PM. Los Domingos descansamos. ¡Te esperamos!",
-		ContactReply:      "¡Hola! Claro que sí, con mucho gusto: comunícate a nuestra línea oficial de WhatsApp exclusiva 3151212223 o a nuestras líneas fijas de vitrina 3022866969 y 3160502717. ¡BuyaCAR, confianza sobre ruedas!",
-		GreetingReply:     "¡Hola! Qué gusto saludarte. Bienvenido a BuyaCAR en Tunja, confianza sobre ruedas. Contamos con vehículos certificados, manejamos todos los bancos y recibimos tu vehículo como parte de pago (permuta). ¿En qué te podemos asesorar hoy?",
-		CreditReply:       "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados (Bancolombia, Davivienda, Sufi y Finandina). Hacemos la simulación indicativa de tu cuota inicial según tu perfil. ¿A qué número de WhatsApp te contactamos para orientarte con los requisitos?",
-		CategoryReply:     "¡Hola! Sí señor(a), en BuyaCAR Tunja contamos con excelentes camionetas familiares y vehículos certificados automáticos listos para prueba de ruta, como la Chevrolet Tracker Turbo, la Mazda CX-5 y la Mazda CX-30. ¿Manejas algún presupuesto aproximado, o a qué número de WhatsApp te compartimos fotos y fichas técnicas completas?",
-		SoldVehicleNotice: "¡Hola! Te contamos que el vehículo consultado ya fue vendido/separado, pero en BuyaCAR Tunja tenemos excelentes opciones similares en camionetas y autos certificados listos para entrega inmediata. ¿Te gustaría conocer las opciones disponibles?",
+		AddressReply: "¡Con mucho gusto!\n\nEn BuyaCAR te esperamos en nuestra vitrina principal en Tunja, Boyacá:\n- Dirección: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota)\n- Vehículos 100% certificados listos para prueba de ruta.\n\n¿Deseas visitarnos hoy?",
+
+		HoursReply: "¡Hola! Con todo gusto, nuestros horarios de atención en Tunja son:\n\n- Lunes a Viernes: 8:00 AM a 6:00 PM (jornada continua)\n- Sábados: 8:00 AM a 2:00 PM\n- Domingos descansamos\n\n¿Te gustaría agendar cita con un asesor?",
+
+		ContactReply: "¡Hola! Claro que sí, con mucho gusto:\n\n- WhatsApp exclusivo: 3151212223\n- Líneas de vitrina: 3022866969 / 3160502717\n- Sede: Av. Oriental - Cra. 6 #52-23, Tunja\n\n¡BuyaCAR, confianza sobre ruedas!",
+
+		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja, confianza sobre ruedas.\n\n- Contamos con vehículos certificados\n- Manejamos todos los bancos\n- Recibimos tu vehículo como parte de pago (permuta)\n\n¿Qué vehículo estás buscando hoy, o prefieres ver nuestro catálogo?",
+
+		CreditReply: "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados:\n\n- Bancolombia, Davivienda, Sufi y Finandina\n- Ofrecemos simulación indicativa de cuota inicial según tu perfil\n\n¿A qué número de WhatsApp te compartimos los requisitos y opciones?",
+
+		CategoryReply: "¡Hola! Sí señor(a), en BuyaCAR Tunja contamos con excelentes opciones disponibles:\n\n- Chevrolet Tracker Turbo\n- Mazda CX-5\n- Mazda CX-30\n\nTodas 100% certificadas, automáticas y familiares.\n¿Manejas algún presupuesto aproximado, o a qué número de WhatsApp te compartimos fotos y fichas técnicas?",
+
+		SoldVehicleNotice: "¡Hola! Te contamos que el vehículo consultado ya fue vendido/separado, pero en BuyaCAR Tunja tenemos excelentes opciones similares en camionetas y autos certificados listos para entrega inmediata.\n\n¿Te gustaría conocer las opciones disponibles?",
 	}
 }
 
@@ -141,19 +147,19 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {
 	switch intent {
 	case triage.IntentPrice:
-		return fmt.Sprintf("¡Hola! Con mucho gusto: el %s %s modelo %d certificado cuenta con un excelente precio de $%d COP (%d km, transmisión %s). Recibimos tu vehículo en permuta y manejamos todos los bancos aliados. ¿A qué número de WhatsApp te compartimos más fotos y coordinamos tu prueba de ruta en Tunja? (Línea oficial: 3151212223). Más detalles: %s",
+		return fmt.Sprintf("¡Hola! Con mucho gusto:\n\n- %s %s modelo %d\n- Precio: $%d COP\n- Kilometraje: %d km (%s)\n\nRecibimos tu usado en permuta y financiamos. ¿A qué WhatsApp te enviamos fotos y coordinamos tu prueba de ruta en Tunja? (WhatsApp 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.OfficialURL)
 	case triage.IntentMileage:
-		return fmt.Sprintf("¡Hola! Con todo gusto: el %s %s modelo %d tiene solo %d km verificados y garantizados, con un precio de $%d COP. ¿Te gustaría agendar una prueba de ruta en nuestra vitrina de Tunja? Escríbenos o déjanos tu WhatsApp (Línea directa: 3151212223). Ficha: %s",
+		return fmt.Sprintf("¡Hola! Con todo gusto:\n\n- %s %s modelo %d\n- Kilometraje: %d km verificados\n- Precio: $%d COP\n\n¿Te gustaría agendar prueba de ruta en Tunja? Escríbenos o déjanos tu WhatsApp (Línea oficial: 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.MileageKm, v.PriceCOP, v.OfficialURL)
 	case triage.IntentDocs:
-		return fmt.Sprintf("¡Claro que sí! El %s %s modelo %d (placa terminada en %s) se entrega con peritaje certificado de 150 puntos, SOAT y revisión tecnomecánica al día. Precio: $%d COP. ¿A qué número de WhatsApp te enviamos el historial completo? (WhatsApp 3151212223). Ficha: %s",
+		return fmt.Sprintf("¡Claro que sí! Datos del vehículo:\n\n- %s %s modelo %d (placa terminada en %s)\n- SOAT y tecnomecánica al día\n- Precio: $%d COP\n\n¿A qué WhatsApp te enviamos peritaje y documentos? (WhatsApp 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PlateLastChar, v.PriceCOP, v.OfficialURL)
 	case triage.IntentVisit:
-		return fmt.Sprintf("¡Te esperamos con los brazos abiertos! Ven a conocer y hacer prueba de ruta del %s %s modelo %d ($%d COP, %d km) en nuestra sede de Tunja frente a la Toyota. ¿A qué WhatsApp te agendamos tu cita con un asesor? (WhatsApp oficial 3151212223). Ficha: %s",
+		return fmt.Sprintf("¡Te esperamos con gusto en Tunja para prueba de ruta!\n\n- %s %s modelo %d ($%d COP, %d km)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\n¿A qué WhatsApp te agendamos tu cita? (Línea oficial: 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
 	default:
-		return fmt.Sprintf("¡Hola! Sí señor(a), tenemos disponible el %s %s modelo %d ($%d COP, %d km, caja %s, motor %s, tracción %s, color %s) 100%% certificado en BuyaCAR Tunja. ¿A qué número de WhatsApp te compartimos más detalles y agendamos tu prueba de manejo? (WhatsApp oficial: 3151212223). Enlace: %s",
+		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s %s modelo %d\n- Precio: $%d COP (%d km)\n- Transmisión: %s | Motor: %s | Tracción: %s | Color: %s\n\n¿A qué WhatsApp te compartimos más fotos? (Línea oficial: 3151212223). Ficha: %s",
 			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)
 	}
 }

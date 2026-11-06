@@ -26,7 +26,7 @@ func TestFastPath_GoldenCasesAndEscalation(t *testing.T) {
 	// GC-002: Horario
 	cl = triage.Classify("¿Qué horario de atención tienen los sábados?")
 	res = eng.Evaluate(ctx, cl, cache, now)
-	if !res.Handled || !strings.Contains(res.Reply, "Sábados de 8:00 AM a 2:00 PM") || !strings.Contains(res.Reply, "Domingos descansamos") {
+	if !res.Handled || !strings.Contains(res.Reply, "Sábados: 8:00 AM a 2:00 PM") || !strings.Contains(res.Reply, "Domingos descansamos") {
 		t.Fatalf("expected hours reply with Sábados hasta las 2pm, got %+v", res)
 	}
 
