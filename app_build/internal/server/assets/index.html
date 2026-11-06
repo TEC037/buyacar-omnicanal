@@ -298,19 +298,27 @@
           Workflows n8n listos en tu carpeta: <code>n8n/buyacar_standalone_gemini_workflow.json</code> (100% autónomo en n8n) y <code>n8n/buyacar_bridge_workflow.json</code> (Puente HTTP <code>POST /api/n8n/webhook</code>).
         </div>
       </div>
-      <!-- Conexión guiada de Meta sin usar terminal -->
-      <details style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-        <summary style="cursor: pointer; font-size: 0.85rem; color: #93c5fd; font-weight: 600;">
-          Conectar Pagina Oficial de Facebook / Meta en Caliente (Opcional - ya funciona en Sandbox local sin tokens)
+      <!-- Conexión rápida de Canales Oficiales Meta y WhatsApp en Caliente -->
+      <details open style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+        <summary style="cursor: pointer; font-size: 0.9rem; color: #38bdf8; font-weight: 600;">
+          Configuración Rápida de Canales Meta y WhatsApp (100% Nativo, Sin n8n)
         </summary>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
-          <input id="meta-page-id" type="text" placeholder="META_PAGE_ID (ej. 1029384756)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
-          <input id="meta-access-token" type="password" placeholder="META_ACCESS_TOKEN (EAAB...)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
-          <input id="meta-app-secret" type="password" placeholder="META_APP_SECRET (HMAC-SHA256)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
-          <button onclick="saveMetaConfig()" class="btn btn-unpause">Guardar Credenciales Meta</button>
-        </div>
-        <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 8px;">
-          Webhook Callback URL para pegar en Meta Developers: <code>/webhooks/meta</code> &bull; Verify Token por defecto: <code>buyacar-verify-sim</code>
+        <div style="background:#0b132b; border:1px solid #1e293b; border-radius:6px; padding:12px; margin-top:8px;">
+          <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:8px;">
+            Pega tus credenciales oficiales de Meta for Developers para activar las respuestas en tiempo real:
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+            <input id="meta-page-id" type="text" placeholder="META_PAGE_ID (ej. 1029384756)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+            <input id="meta-access-token" type="password" placeholder="META_ACCESS_TOKEN (EAAB...)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+            <input id="meta-app-secret" type="password" placeholder="META_APP_SECRET (HMAC-SHA256)" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+            <input id="meta-verify-token" type="text" placeholder="Verify Token (ej. buyacar-verify-sim)" value="buyacar-verify-sim" style="background:#0f172a;color:#f8fafc;border:1px solid var(--border-color);border-radius:6px;padding:8px;font-size:0.82rem;" />
+          </div>
+          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <button onclick="saveMetaConfig()" class="btn btn-unpause">Guardar Credenciales de Meta</button>
+            <span style="font-size:0.76rem; color:#cbd5e1;">
+              Webhook Callback URL para Meta Developers: <code style="color:#38bdf8;">/webhooks/meta</code>
+            </span>
+          </div>
         </div>
       </details>
     </div>
@@ -533,15 +541,16 @@
       const pageId = document.getElementById('meta-page-id').value.trim();
       const token = document.getElementById('meta-access-token').value.trim();
       const secret = document.getElementById('meta-app-secret').value.trim();
+      const verify = (document.getElementById('meta-verify-token') ? document.getElementById('meta-verify-token').value.trim() : '') || 'buyacar-verify-sim';
       try {
         const res = await fetch('/api/meta/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page_id: pageId, access_token: token, app_secret: secret })
+          body: JSON.stringify({ page_id: pageId, access_token: token, app_secret: secret, verify_token: verify })
         });
         if (res.ok) {
           const data = await res.json();
-          showToast('Credenciales Meta actualizadas en caliente (' + data.graph_base_url + ')');
+          showToast('Credenciales Meta y WhatsApp actualizadas (' + (data.graph_base_url || 'conectado') + ')');
         }
       } catch (err) {
         showToast('Error guardando credenciales: ' + err.message);
