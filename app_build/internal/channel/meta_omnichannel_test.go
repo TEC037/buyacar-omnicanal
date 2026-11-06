@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 
 	"buyacar.com.co/omnicanal/internal/escalate"
@@ -331,5 +332,76 @@ func TestMetaOmnichannel_ModesAndRateResilience(t *testing.T) {
 	tickets := escQueue.Pending()
 	if len(tickets) == 0 {
 		t.Fatal("expected escalation ticket in escalate.Queue for auto-paused Messenger")
+	}
+}
+
+func TestMetaOmnichannel_FIFOBacklogSorting(t *testing.T) {
+	adapter := NewMetaOmnichannelAdapter(MetaOmnichannelConfig{
+		PageID:      "page_fifo",
+		VerifyToken: "token_fifo",
+		AppSecret:   "secret_fifo",
+	}, nil, nil)
+
+	var receivedOrder []string
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	adapter.SetOnInboundConversation(func(channelID string, conv Conversation) {
+		receivedOrder = append(receivedOrder, conv.CustomerAlias)
+		wg.Done()
+	})
+
+	// Enviamos webhook payload con 3 mensajes fuera de orden temporal (t3, t1, t2)
+	// El procesador FIFO debe despacharlos en orden ascendente (t1, t2, t3)
+	payload := `{
+		"object": "page",
+		"entry": [
+			{
+				"id": "page_fifo",
+				"time": 3000,
+				"messaging": [
+					{
+						"sender": {"id": "cliente_t3"},
+						"recipient": {"id": "page_fifo"},
+						"timestamp": 3000,
+						"message": {"mid": "mid_3", "text": "Mensaje 3 (más nuevo)"}
+					},
+					{
+						"sender": {"id": "cliente_t1"},
+						"recipient": {"id": "page_fifo"},
+						"timestamp": 1000,
+						"message": {"mid": "mid_1", "text": "Mensaje 1 (más antiguo)"}
+					},
+					{
+						"sender": {"id": "cliente_t2"},
+						"recipient": {"id": "page_fifo"},
+						"timestamp": 2000,
+						"message": {"mid": "mid_2", "text": "Mensaje 2 (intermedio)"}
+					}
+				]
+			}
+		]
+	}`
+
+	mac := hmac.New(sha256.New, []byte("secret_fifo"))
+	mac.Write([]byte(payload))
+	sig := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+
+	req := httptest.NewRequest(http.MethodPost, "/webhooks/meta", bytes.NewReader([]byte(payload)))
+	req.Header.Set("X-Hub-Signature-256", sig)
+	w := httptest.NewRecorder()
+
+	adapter.HandleWebhook(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d", w.Code)
+	}
+
+	wg.Wait()
+
+	if len(receivedOrder) != 3 {
+		t.Fatalf("expected 3 processed messages, got %d", len(receivedOrder))
+	}
+	if receivedOrder[0] != "cliente_t1" || receivedOrder[1] != "cliente_t2" || receivedOrder[2] != "cliente_t3" {
+		t.Fatalf("expected FIFO order [cliente_t1, cliente_t2, cliente_t3], got %+v", receivedOrder)
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -403,6 +404,15 @@ func (a *MetaOmnichannelAdapter) HandleWebhook(rw http.ResponseWriter, r *http.R
 			platform = "instagram"
 		}
 
+		type parsedMessageItem struct {
+			platform string
+			senderID string
+			mid      string
+			msgText  string
+			ts       time.Time
+		}
+		var validMessages []parsedMessageItem
+
 		for _, entry := range metaPayload.Entry {
 			for _, m := range entry.Messaging {
 				ts := time.Now().UTC()
@@ -435,23 +445,40 @@ func (a *MetaOmnichannelAdapter) HandleWebhook(rw http.ResponseWriter, r *http.R
 
 				if triageRes.ShouldProcess {
 					a.IngestTriageResult(triageRes)
-					a.mu.RLock()
-					hook := a.onInbound
-					chID := ChannelIDMessenger
-					if platform == "instagram" {
-						chID = ChannelIDInstagram
-					}
-					conv := Conversation{
-						ID:            fmt.Sprintf("%s-%s", chID, m.Sender.ID),
-						ChannelID:     chID,
-						CustomerAlias: m.Sender.ID,
-						UpdatedAt:     ts,
-					}
-					a.mu.RUnlock()
-					if hook != nil {
-						hook(chID, conv)
-					}
+					validMessages = append(validMessages, parsedMessageItem{
+						platform: platform,
+						senderID: m.Sender.ID,
+						mid:      m.Message.MID,
+						msgText:  msgText,
+						ts:       ts,
+					})
 				}
+			}
+		}
+
+		// Ordenar mensajes entrantes por timestamp ascendente (FIFO: el mensaje más antiguo se atiende primero)
+		if len(validMessages) > 1 {
+			sort.SliceStable(validMessages, func(i, j int) bool {
+				return validMessages[i].ts.Before(validMessages[j].ts)
+			})
+		}
+
+		for _, vm := range validMessages {
+			chID := ChannelIDMessenger
+			if vm.platform == "instagram" {
+				chID = ChannelIDInstagram
+			}
+			conv := Conversation{
+				ID:            fmt.Sprintf("%s-%s", chID, vm.senderID),
+				ChannelID:     chID,
+				CustomerAlias: vm.senderID,
+				UpdatedAt:     vm.ts,
+			}
+			a.mu.RLock()
+			hook := a.onInbound
+			a.mu.RUnlock()
+			if hook != nil {
+				hook(chID, conv)
 			}
 		}
 
