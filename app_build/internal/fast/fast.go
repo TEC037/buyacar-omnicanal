@@ -27,9 +27,9 @@ func DefaultBusinessTexts() BusinessTexts {
 
 		HoursReply: "¡Hola! Con todo gusto, nuestros horarios de atención en Tunja son:\n\n- Lunes a Viernes: 8:00 AM a 6:00 PM (jornada continua)\n- Sábados: 8:00 AM a 2:00 PM\n- Domingos descansamos\n\n¿Te gustaría agendar cita con un asesor?",
 
-		ContactReply: "¡Hola! Claro que sí, con mucho gusto:\n\n- WhatsApp exclusivo: 3151212223\n- Líneas de vitrina: 3022866969 / 3160502717\n- Sede: Av. Oriental - Cra. 6 #52-23, Tunja\n\n¡BuyaCAR, confianza sobre ruedas!",
+		ContactReply: "¡Hola! Claro que sí, con mucho gusto:\n\n- WhatsApp exclusivo: 3151212223\n- Líneas de vitrina: 3022866969 / 3160502717\n- Sede: Av. Oriental - Cra. 6 #52-23, Tunja\n\nBuyaCAR · Vehículos certificados",
 
-		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja, confianza sobre ruedas.\n\n- Contamos con vehículos certificados\n- Manejamos todos los bancos\n- Recibimos tu vehículo como parte de pago (permuta)\n\n¿Qué vehículo estás buscando hoy, o prefieres ver nuestro catálogo?",
+		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\n¿Estás buscando algún vehículo en especial, o prefieres que te comparta nuestro catálogo disponible?",
 
 		CreditReply: "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados:\n\n- Bancolombia, Davivienda, Sufi y Finandina\n- Ofrecemos simulación indicativa de cuota inicial según tu perfil\n\n¿A qué número de WhatsApp te compartimos los requisitos y opciones?",
 

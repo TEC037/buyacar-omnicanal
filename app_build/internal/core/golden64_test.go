@@ -41,10 +41,10 @@ func build64GoldenCases() []GoldenCase {
 		{10, "A_FastPath", "Me regalan el telefono de contacto?", true, false, "3022866969"},
 		{11, "A_FastPath", "A que numero puedo llamar?", true, false, "3160502717"},
 		{12, "A_FastPath", "Telefono o WhatsApp de BuyaCAR", true, false, "3151212223"},
-		{13, "A_FastPath", "Hola", true, false, "confianza sobre ruedas"},
-		{14, "A_FastPath", "Buenos dias", true, false, "vehículos certificados"},
-		{15, "A_FastPath", "Buenas tardes", true, false, "todos los bancos"},
-		{16, "A_FastPath", "Buenas noches", true, false, "parte de pago (permuta)"},
+		{13, "A_FastPath", "Hola", true, false, "Vehículos certificados"},
+		{14, "A_FastPath", "Buenos dias", true, false, "Vehículos certificados"},
+		{15, "A_FastPath", "Buenas tardes", true, false, "Vehículos certificados"},
+		{16, "A_FastPath", "Buenas noches", true, false, "Vehículos certificados"},
 
 		// Suite B: Inventario Verificado (16 casos: 17..32)
 		{17, "B_Inventory", "Que precio tiene la Toyota Hilux 2022?", true, false, "185000000"},
