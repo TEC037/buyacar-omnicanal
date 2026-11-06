@@ -247,6 +247,27 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		elapsedMs := float64(time.Since(start).Microseconds()) / 1000.0
 		obsCollector.RecordFastPathLatency(elapsedMs)
 		obsCollector.RecordOutcome(out.UsedFastPath, out.UsedAI, out.Escalated, out.EscalationReason, out.Skipped, out.SkipReason, out.InputTokens, out.OutputTokens)
+
+		// Actualizar perfil de CRM / embudo de ventas para trazabilidad en vivo
+		th, thErr := subCh.Read(wCtx, sess, conv)
+		lastText := ""
+		if thErr == nil && len(th.Messages) > 0 {
+			lastText = th.Messages[len(th.Messages)-1].Text
+		}
+		intentScore, stage := crm.CalculateIntentScore(lastText, "", 1)
+		detectedPhone := crm.ExtractColombianPhone(lastText)
+		leadStore.UpsertLead(wCtx, crm.LeadProfile{
+			CustomerID:      conv.ID,
+			CustomerAlias:   conv.CustomerAlias,
+			ChannelID:       chID,
+			Phone:           detectedPhone,
+			WhatsAppHandoff: detectedPhone != "",
+			IntentScore:     intentScore,
+			Stage:           stage,
+			AppointmentSede: "Av. Oriental - Cra. 6 #52-23, frente a la Toyota, Tunja",
+			LastInteraction: time.Now().UTC(),
+		})
+
 		if out.SentReply != "" && !out.Escalated {
 			metricsExporter.IncrementChannelMessages(chID)
 			status := "pending"

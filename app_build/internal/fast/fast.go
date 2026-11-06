@@ -29,7 +29,7 @@ func DefaultBusinessTexts() BusinessTexts {
 
 		ContactReply: "¡Hola! Claro que sí, con mucho gusto:\n\n- WhatsApp exclusivo: 3151212223\n- Líneas de vitrina: 3022866969 / 3160502717\n- Sede: Av. Oriental - Cra. 6 #52-23, Tunja\n\nBuyaCAR · Vehículos certificados",
 
-		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\n¿Estás buscando algún vehículo en especial, o prefieres que te comparta nuestro catálogo disponible?",
+		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\nPuedes consultar nuestro inventario actualizado con precios y fotos en https://buyacar.com.co\n\n¿Te llamó la atención algún modelo en particular para coordinar tu prueba de ruta?",
 
 		CreditReply: "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados:\n\n- Bancolombia, Davivienda, Sufi y Finandina\n- Ofrecemos simulación indicativa de cuota inicial según tu perfil\n\n¿A qué número de WhatsApp te compartimos los requisitos y opciones?",
 
