@@ -16,6 +16,7 @@ type BusinessTexts struct {
 	ContactReply      string
 	GreetingReply     string
 	CreditReply       string
+	CategoryReply     string
 	SoldVehicleNotice string
 }
 
@@ -27,6 +28,7 @@ func DefaultBusinessTexts() BusinessTexts {
 		ContactReply:      "¡Hola! Claro que sí, con mucho gusto: comunícate a nuestra línea oficial de WhatsApp exclusiva 3151212223 o a nuestras líneas fijas de vitrina 3022866969 y 3160502717. ¡BuyaCAR, confianza sobre ruedas!",
 		GreetingReply:     "¡Hola! Qué gusto saludarte. Bienvenido a BuyaCAR en Tunja, confianza sobre ruedas. Contamos con vehículos certificados, manejamos todos los bancos y recibimos tu vehículo como parte de pago (permuta). ¿En qué te podemos asesorar hoy?",
 		CreditReply:       "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados (Bancolombia, Davivienda, Sufi y Finandina). Hacemos la simulación indicativa de tu cuota inicial según tu perfil. ¿A qué número de WhatsApp te contactamos para orientarte con los requisitos?",
+		CategoryReply:     "¡Hola! Sí señor(a), en BuyaCAR Tunja contamos con excelentes camionetas familiares y vehículos certificados automáticos listos para prueba de ruta, como la Chevrolet Tracker Turbo, la Mazda CX-5 y la Mazda CX-30. ¿Manejas algún presupuesto aproximado, o a qué número de WhatsApp te compartimos fotos y fichas técnicas completas?",
 		SoldVehicleNotice: "¡Hola! Te contamos que el vehículo consultado ya fue vendido/separado, pero en BuyaCAR Tunja tenemos excelentes opciones similares en camionetas y autos certificados listos para entrega inmediata. ¿Te gustaría conocer las opciones disponibles?",
 	}
 }
@@ -84,6 +86,8 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 		return Result{Handled: true, Reply: e.texts.GreetingReply, InventoryStatus: inventory.StatusVehicleNotRequired}
 	case triage.IntentCreditGeneral:
 		return Result{Handled: true, Reply: e.texts.CreditReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+	case triage.IntentCategoryQuery:
+		return Result{Handled: true, Reply: e.texts.CategoryReply, InventoryStatus: inventory.StatusVehicleNotRequired}
 	}
 
 	// Consulta de inventario

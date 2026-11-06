@@ -812,7 +812,7 @@ func TestPipeline_CP4_WithoutRAG_BackwardCompatibility(t *testing.T) {
 
 	conv := channel.Conversation{ID: "conv-no-rag", ChannelID: "whatsapp", CustomerAlias: "Cliente_NoRAG", UpdatedAt: now}
 	waStub.SeedThread(conv, []channel.Message{
-		{ID: "m1", Sender: "customer", Text: "¿Tienen camionetas 4x4 familiares?", Timestamp: now.Add(-1 * time.Minute)},
+		{ID: "m1", Sender: "customer", Text: "¿Qué diferencias de peritaje y revisión aplican al comparar modelos?", Timestamp: now.Add(-1 * time.Minute)},
 	})
 
 	sess, _ := waStub.Open(ctx, channel.Link{ID: "l1", URL: "https://buyacar.com.co/wa", Active: true})

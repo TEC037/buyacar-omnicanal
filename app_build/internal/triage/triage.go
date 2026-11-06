@@ -23,6 +23,7 @@ const (
 	IntentDocs         Intent = "docs"  // SOAT, tecnomecanica, placa
 	IntentVisit        Intent = "visit_or_test_drive"
 	IntentCreditGeneral Intent = "credit_general"
+	IntentCategoryQuery Intent = "category_suv_or_family"
 
 	// Intenciones dificiles o de escalamiento obligatorio (paso 10 del flujo)
 	IntentDiscount     Intent = "discount_or_min_price"
@@ -122,6 +123,16 @@ func Classify(raw string) Classification {
 	}
 
 	// 3. Intenciones faciles sin requerir vehiculo especifico
+	if containsAny(norm, "camioneta", "camionetas", "suv", "familiar", "familiares", "automaticas", "automatica", "que carros tienen", "que vehiculos tienen") && q.Brand == "" && q.Model == "" {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentCategoryQuery,
+			Confidence:     0.95,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+
 	if containsAny(norm, "credito", "financiacion", "cuota inicial", "bancos", "financian") && !containsAny(norm, "datacredito", "reportado", "centrales de riesgo") && q.Brand == "" && q.Model == "" {
 		return Classification{
 			NormalizedText: norm,
