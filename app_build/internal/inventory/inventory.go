@@ -371,7 +371,7 @@ func (c *Cache) Search(ctx context.Context, q Query, now time.Time) MatchResult 
 		if q.Brand != "" && !strings.EqualFold(v.Brand, q.Brand) {
 			continue
 		}
-		if q.Model != "" && !strings.EqualFold(v.Model, q.Model) {
+		if q.Model != "" && !strings.EqualFold(v.Model, q.Model) && !strings.EqualFold(strings.ReplaceAll(v.Model, " ", ""), strings.ReplaceAll(q.Model, " ", "")) && !strings.Contains(strings.ToLower(v.Model), strings.ToLower(q.Model)) {
 			continue
 		}
 		if q.Year != 0 && v.Year != q.Year {
