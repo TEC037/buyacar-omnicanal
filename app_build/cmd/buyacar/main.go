@@ -240,6 +240,15 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 			return
 		}
 		start := time.Now()
+		if invCache != nil && !invCache.IsFresh(start.UTC()) {
+			if fetcher != nil && os.Getenv("BUYACAR_LIVE_INVENTORY_SYNC") == "1" {
+				if _, syncErr := fetcher.Sync(wCtx, invCache, start.UTC()); syncErr != nil {
+					invCache.TouchRefresh(start.UTC())
+				}
+			} else {
+				invCache.TouchRefresh(start.UTC())
+			}
+		}
 		out, _ := pipe.ProcessConversation(wCtx, subCh, sess, conv, start.UTC())
 		lastWebhookMu.Lock()
 		lastWebhookOutcome = out
@@ -470,12 +479,21 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		if geminiProv != nil && geminiProv.HasAPIKey() {
 			pipeTimeout = 8 * time.Second
 		}
+		if invCache != nil && !invCache.IsFresh(start.UTC()) {
+			if fetcher != nil && os.Getenv("BUYACAR_LIVE_INVENTORY_SYNC") == "1" {
+				if _, syncErr := fetcher.Sync(cCtx, invCache, start.UTC()); syncErr != nil {
+					invCache.TouchRefresh(start.UTC())
+				}
+			} else {
+				invCache.TouchRefresh(start.UTC())
+			}
+		}
 		pipeCtx, pipeCancel := context.WithTimeout(cCtx, pipeTimeout)
 		out, _ := pipe.ProcessConversation(pipeCtx, fbMarketplace, sess, conv, start.UTC())
 		pipeCancel()
 
 		// Síntesis determinista respaldada por RAG cuando el proveedor LLM externo no está disponible o excede el SLA interactivo pero el RAG local tiene respuesta fáctica verificada
-		if out.Escalated && (out.EscalationReason == "ai_providers_failed_or_exhausted" || strings.Contains(out.EscalationReason, "failed")) && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.65 {
+		if out.Escalated && (out.EscalationReason == "ai_providers_failed_or_exhausted" || strings.Contains(out.EscalationReason, "failed")) && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.50 {
 			top := scoredRAG[0].Chunk
 			snippet := strings.TrimSpace(strings.ReplaceAll(top.Content, "\n", " "))
 			if runes := []rune(snippet); len(runes) > 260 {

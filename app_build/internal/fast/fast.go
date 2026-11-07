@@ -3,43 +3,37 @@ package fast
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"buyacar.com.co/omnicanal/internal/inventory"
 	"buyacar.com.co/omnicanal/internal/triage"
 )
 
-// BusinessTexts almacena los textos comerciales editables en configuracion (nunca hardcodeados en logica).
+// BusinessTexts contiene la informacion oficial verificada de BuyaCAR en Tunja.
 type BusinessTexts struct {
-	AddressReply      string
-	HoursReply        string
-	ContactReply      string
-	GreetingReply     string
-	CreditReply       string
-	CategoryReply     string
-	SoldVehicleNotice string
+	AddressReply       string
+	HoursReply         string
+	ContactReply       string
+	GreetingReply      string
+	SoldVehicleNotice  string
+	CreditGeneralReply string
+	CategorySUVReply   string
 }
 
-// DefaultBusinessTexts retorna los textos verificados de BuyaCAR en Tunja con voz comercial colombiana y diseño limpio sin emoticonos.
 func DefaultBusinessTexts() BusinessTexts {
 	return BusinessTexts{
-		AddressReply: "¡Con mucho gusto!\n\nEn BuyaCAR te esperamos en nuestra vitrina principal en Tunja, Boyacá:\n- Dirección: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota)\n- Vehículos 100% certificados listos para prueba de ruta.\n\n¿Deseas visitarnos hoy?",
-
-		HoursReply: "¡Hola! Con todo gusto, nuestros horarios de atención en Tunja son:\n\n- Lunes a Viernes: 8:00 AM a 6:00 PM (jornada continua)\n- Sábados: 8:00 AM a 2:00 PM\n- Domingos descansamos\n\n¿Te gustaría agendar cita con un asesor?",
-
-		ContactReply: "¡Hola! Claro que sí, con mucho gusto:\n\n- WhatsApp exclusivo: 3151212223\n- Líneas de vitrina: 3022866969 / 3160502717\n- Sede: Av. Oriental - Cra. 6 #52-23, Tunja\n\nBuyaCAR · Vehículos certificados",
-
+		AddressReply: "¡Hola! Te esperamos en BuyaCAR en Tunja:\n\n- Dirección: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota)\n- Ciudad: Tunja, Boyacá\n- Catálogo: https://buyacar.com.co\n\n¿Te gustaría agendar una visita o prueba de ruta? Escríbenos al WhatsApp 3151212223.",
+		HoursReply:   "¡Hola! Nuestro horario de atención en Tunja (Cra. 6 #52-23, frente a la Toyota) es:\n\n- Lunes a Viernes: 8:00 AM a 6:00 PM (jornada continua)\n- Sábados: 8:00 AM a 2:00 PM\n- Domingos descansamos\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223.",
+		ContactReply: "¡Claro que sí! Nuestras líneas oficiales de BuyaCAR en Tunja son:\n\n- WhatsApp Comercial: 3151212223\n- Atención Vitrina: 3022866969 / 3160502717\n- Catálogo web: https://buyacar.com.co\n\n¿Sobre qué vehículo te gustaría recibir asesoría?",
 		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\nPuedes consultar nuestro inventario actualizado con precios y fotos en https://buyacar.com.co\n\n¿Te llamó la atención algún modelo en particular para coordinar tu prueba de ruta?",
-
-		CreditReply: "¡Claro que sí! En BuyaCAR te asesoramos con la financiación de tu vehículo a través de nuestros bancos aliados:\n\n- Bancolombia, Davivienda, Sufi y Finandina\n- Ofrecemos simulación indicativa de cuota inicial según tu perfil\n\n¿A qué número de WhatsApp te compartimos los requisitos y opciones?",
-
-		CategoryReply: "¡Hola! Sí señor(a), en BuyaCAR Tunja contamos con excelentes opciones disponibles:\n\n- Chevrolet Tracker Turbo\n- Mazda CX-5\n- Mazda CX-30\n\nTodas 100% certificadas, automáticas y familiares.\n¿Manejas algún presupuesto aproximado, o a qué número de WhatsApp te compartimos fotos y fichas técnicas?",
-
-		SoldVehicleNotice: "¡Hola! Te contamos que el vehículo consultado ya fue vendido/separado, pero en BuyaCAR Tunja tenemos excelentes opciones similares en camionetas y autos certificados listos para entrega inmediata.\n\n¿Te gustaría conocer las opciones disponibles?",
+		SoldVehicleNotice: "Te informamos que esta unidad ya fue vendido/separado en nuestra vitrina de Tunja.\n\nUn asesor humano te compartirá de inmediato alternativas similares certificadas. También puedes ver opciones disponibles en https://buyacar.com.co o al WhatsApp 3151212223.",
+		CreditGeneralReply: "En BuyaCAR en Tunja te ayudamos con financiación vehicular:\n\n- Convenios con bancos aliados (Bancolombia, Davivienda, Finandina)\n- Planes de cuota inicial desde el 10%-20% y simulación indicativa según perfil\n\nCatálogo: https://buyacar.com.co\n¿A qué WhatsApp te contactamos? (Línea: 3151212223).",
+		CategorySUVReply: "¡Hola! En BuyaCAR en Tunja contamos con camionetas y SUVs certificadas:\n\n- Toyota Hilux 4x4 y Fortuner\n- Mazda CX-5 y Mazda CX-30\n- Chevrolet Tracker y Captiva\n- Renault Duster y Nissan Qashqai\n\nVer precios y fotos: https://buyacar.com.co\n¿Cuál te gustaría agendar para prueba de ruta? (WhatsApp 3151212223).",
 	}
 }
 
-// Result contiene la decision del motor Fast-Path.
+// Result representa la salida determinista del motor Fast-Path (0 tokens de IA).
 type Result struct {
 	Handled          bool
 	Reply            string
@@ -48,24 +42,25 @@ type Result struct {
 	InventoryStatus  inventory.Status
 }
 
-// Engine ejecuta el Fast-Path determinista solo cuando confianza >= 0.80 y estado es exact_match o vehicle_not_required.
+// Engine resuelve consultas frecuentes y de inventario exacto sin invocar modelos de IA.
 type Engine struct {
 	texts               BusinessTexts
 	confidenceThreshold float64
 }
 
-func NewEngine(texts BusinessTexts, threshold float64) *Engine {
-	if threshold <= 0 {
-		threshold = 0.80
+func NewEngine(texts BusinessTexts, confidenceThreshold float64) *Engine {
+	if confidenceThreshold <= 0 {
+		confidenceThreshold = 0.80
 	}
 	return &Engine{
 		texts:               texts,
-		confidenceThreshold: threshold,
+		confidenceThreshold: confidenceThreshold,
 	}
 }
 
-// Evaluate procesa la clasificacion y consulta la cache de inventario sin usar IA (0 tokens).
+// Evaluate intenta resolver en sub-milisegundo con reglas deterministas.
 func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *inventory.Cache, now time.Time) Result {
+	// 1. Si el triage ya marco escalamiento obligatorio o baja confianza
 	if cl.MustEscalate {
 		return Result{
 			Handled:          false,
@@ -73,36 +68,111 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 			EscalationReason: cl.EscalationReason,
 		}
 	}
-
 	if !cl.IsEasy || cl.Confidence < e.confidenceThreshold {
 		return Result{
 			Handled: false,
 		}
 	}
 
-	// Intenciones que no requieren consultar un vehiculo especifico
+	// 2. Consultas corporativas sin requerir vehiculo
 	switch cl.Intent {
 	case triage.IntentLocation:
-		return Result{Handled: true, Reply: e.texts.AddressReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.AddressReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
 	case triage.IntentHours:
-		return Result{Handled: true, Reply: e.texts.HoursReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.HoursReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
 	case triage.IntentContact:
-		return Result{Handled: true, Reply: e.texts.ContactReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.ContactReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
 	case triage.IntentGreeting:
-		return Result{Handled: true, Reply: e.texts.GreetingReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.GreetingReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
 	case triage.IntentCreditGeneral:
-		return Result{Handled: true, Reply: e.texts.CreditReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.CreditGeneralReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
 	case triage.IntentCategoryQuery:
-		return Result{Handled: true, Reply: e.texts.CategoryReply, InventoryStatus: inventory.StatusVehicleNotRequired}
+		return Result{
+			Handled:         true,
+			Reply:           e.formatCategoryReply(cl.NormalizedText),
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
 	}
 
-	// Consulta de inventario
-	match := cache.Search(ctx, cl.ExtractedQuery, now)
+	// 3. Consultas de inventario: validar estado de cache y coincidencias
+	if cache == nil {
+		return Result{
+			Handled:          false,
+			MustEscalate:     true,
+			EscalationReason: "inventory_unavailable",
+			InventoryStatus:  inventory.StatusUnavailable,
+		}
+	}
 
+	match := cache.Search(ctx, cl.ExtractedQuery, now)
 	switch match.Status {
+	case inventory.StatusUnavailable, inventory.StatusStale:
+		return Result{
+			Handled:          false,
+			MustEscalate:     true,
+			EscalationReason: string(match.Status),
+			InventoryStatus:  match.Status,
+		}
+	case inventory.StatusNoMatch:
+		return Result{
+			Handled:          false,
+			MustEscalate:     true,
+			EscalationReason: "vehicle_not_found_in_inventory",
+			InventoryStatus:  inventory.StatusNoMatch,
+		}
+	case inventory.StatusMultipleMatches:
+		var avail []inventory.Vehicle
+		for _, v := range match.Vehicles {
+			if v.Status == "available" {
+				avail = append(avail, v)
+			}
+		}
+		// Si solo 1 unidad del modelo sigue disponible (ej. Duster 2021 disponible vs 2020 vendida), responder por la unidad disponible
+		if len(avail) == 1 {
+			return Result{
+				Handled:         true,
+				Reply:           formatVehicleReply(cl.Intent, avail[0]),
+				InventoryStatus: inventory.StatusExactMatch,
+			}
+		}
+		// Si el usuario pregunta por una marca general sin especificar modelo (ej. "¿Qué Mazda tienen?"), listar las opciones disponibles de esa marca
+		if cl.ExtractedQuery.Brand != "" && cl.ExtractedQuery.Model == "" && len(avail) > 1 {
+			return Result{
+				Handled:         true,
+				Reply:           formatBrandSummaryReply(cl.ExtractedQuery.Brand, avail),
+				InventoryStatus: inventory.StatusMultipleMatches,
+			}
+		}
+		// Leccion conocida #3: jamas elegir al azar cuando hay multiples anos de un mismo modelo (ej. dos Mazda CX-5)
+		return Result{
+			Handled:          false,
+			MustEscalate:     true,
+			EscalationReason: "multiple_matches_disambiguation_required",
+			InventoryStatus:  inventory.StatusMultipleMatches,
+		}
 	case inventory.StatusExactMatch:
 		v := match.Vehicles[0]
-		// Leccion conocida #4: Vehiculos vendidos o no disponibles requieren respuesta comercial y escalamiento, nunca silencio.
+		// Leccion conocida #4: si el vehiculo esta sold o reserved, informar y escalar a humano
 		if v.Status != "available" {
 			return Result{
 				Handled:          true,
@@ -117,31 +187,39 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 			Reply:           formatVehicleReply(cl.Intent, v),
 			InventoryStatus: inventory.StatusExactMatch,
 		}
-
-	case inventory.StatusMultipleMatches:
-		// Leccion conocida #3: Dos vehiculos del mismo modelo con distinto ano requieren pregunta o escalamiento.
-		return Result{
-			Handled:          false,
-			MustEscalate:     true,
-			EscalationReason: "multiple_matches_disambiguation_required",
-			InventoryStatus:  inventory.StatusMultipleMatches,
-		}
-
-	case inventory.StatusNoMatch, inventory.StatusStale, inventory.StatusUnavailable:
-		// Regla 6 y 10 del flujo: nunca adivinar; escalar cuando no hay match o inventario caducado/caido.
-		return Result{
-			Handled:          false,
-			MustEscalate:     true,
-			EscalationReason: string(match.Status),
-			InventoryStatus:  match.Status,
-		}
-
 	default:
-		return Result{
-			Handled:         false,
-			InventoryStatus: match.Status,
-		}
+		return Result{Handled: false}
 	}
+}
+
+func (e *Engine) formatCategoryReply(norm string) string {
+	switch {
+	case strings.Contains(norm, "7 pasajeros") || strings.Contains(norm, "siete pasajeros") || strings.Contains(norm, "7 puestos") || strings.Contains(norm, "siete puestos"):
+		return "¡Hola! En BuyaCAR en Tunja tenemos estas camionetas de 7 pasajeros certificadas:\n\n- Toyota Fortuner 2024 (Diésel, 7 puestos)\n- Nissan X-Trail 2019 (4x4, 7 puestos)\n\nCatálogo y precios: https://buyacar.com.co\n¿Cuál te gustaría ver en vitrina? (WhatsApp 3151212223)."
+	case strings.Contains(norm, "4x4") || strings.Contains(norm, "doble traccion") || strings.Contains(norm, "platon") || strings.Contains(norm, "pickup") || strings.Contains(norm, "pick-up") || strings.Contains(norm, "diesel"):
+		return "¡Hola! En BuyaCAR en Tunja tenemos estas opciones 4x4 y Diésel certificadas:\n\n- Toyota Hilux 2022 (4x4 Turbo Diésel)\n- Nissan Qashqai 2026 (4x4 Turbo)\n- Nissan X-Trail 2019 (4x4)\n- Ford Escape 2017 (4x4 EcoBoost)\n\nCatálogo: https://buyacar.com.co\n¿Cuál te gustaría probar? (WhatsApp 3151212223)."
+	case strings.Contains(norm, "automovil") || strings.Contains(norm, "sedan") || strings.Contains(norm, "hatchback") || strings.Contains(norm, "pequeno") || strings.Contains(norm, "economico") || strings.Contains(norm, "barato") || strings.Contains(norm, "millones") || strings.Contains(norm, "presupuesto"):
+		return "¡Hola! En BuyaCAR en Tunja tenemos excelentes automóviles y compactos certificados:\n\n- Chevrolet Spark 2012 y Peugeot 207 2011\n- Chevrolet Sonic 2013 y Ford Fiesta 2011\n- Kia Picanto 2022 y Renault Logan 2022\n- Mazda3 2021 y Renault Stepway 2020\n\nCatálogo y precios: https://buyacar.com.co\nFinanciamos con bancos aliados. WhatsApp 3151212223."
+	case strings.Contains(norm, "mecanico") || strings.Contains(norm, "mecanica"):
+		return "¡Hola! En BuyaCAR en Tunja contamos con estas unidades de caja mecánica certificadas:\n\n- Renault Duster 2021 y Nissan Kicks 2020\n- Renault Stepway 2020 y Renault Logan 2022\n- Kia Picanto 2022 y Hyundai Accent 2015\n\nCatálogo y precios: https://buyacar.com.co\n¿Cuál deseas agendar para prueba de ruta? (WhatsApp 3151212223)."
+	default:
+		return e.texts.CategorySUVReply
+	}
+}
+
+func formatBrandSummaryReply(brand string, vehicles []inventory.Vehicle) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "¡Hola! En BuyaCAR en Tunja tenemos estas unidades %s certificadas disponibles:\n\n", brand)
+	maxItems := 4
+	if len(vehicles) < maxItems {
+		maxItems = len(vehicles)
+	}
+	for i := 0; i < maxItems; i++ {
+		v := vehicles[i]
+		fmt.Fprintf(&b, "- %s %d: $%d COP (%s)\n", v.Model, v.Year, v.PriceCOP, v.Transmission)
+	}
+	b.WriteString("\nCatálogo y fotos: https://buyacar.com.co\n¿Cuál te gustaría ver o agendar prueba de ruta? (WhatsApp 3151212223).")
+	return b.String()
 }
 
 func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {

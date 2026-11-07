@@ -321,7 +321,7 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 		}
 
 		// Estrategia A2 (RAG-Direct Synthesizer puro sin llamar LLM)
-		if p.Strategy == "A2_rag_synth" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.65 {
+		if p.Strategy == "A2_rag_synth" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.50 {
 			candidateReply = SynthesizeFromRAGChunk(scoredRAG[0].Chunk)
 			dur4 := time.Since(t4)
 			outcome.TokenStatus = "zero_cached"
@@ -366,8 +366,8 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 				outcome.TokenStatus = "not_measured"
 			}
 
-			// Fallback autónomo A4 (Cascada Adaptativa): si el proveedor LLM no está activo pero el RAG local tiene match fáctico >= 0.65, sintetiza determinísticamente
-			if aiRes.Escalated && (aiRes.Reason == "both_ai_providers_failed" || aiRes.Reason == "ai_providers_failed_or_exhausted") && p.Strategy != "A3_llm_only" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.65 {
+			// Fallback autónomo A4 (Cascada Adaptativa): si el proveedor LLM no está activo pero el RAG local tiene match fáctico >= 0.50, sintetiza determinísticamente
+			if aiRes.Escalated && (aiRes.Reason == "both_ai_providers_failed" || aiRes.Reason == "ai_providers_failed_or_exhausted") && p.Strategy != "A3_llm_only" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.50 {
 				candidateReply = SynthesizeFromRAGChunk(scoredRAG[0].Chunk)
 				outcome.TokenStatus = "zero_cached"
 				_ = p.saveCheckpoint(conv.ID, "cp4_respuesta:ok")
@@ -423,10 +423,19 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 	if len(relevantVehicles) == 1 {
 		referencedVehicleID = relevantVehicles[0].ID
 	} else if len(relevantVehicles) > 1 {
+		lowerReply := strings.ToLower(valRes.SanitizedReply)
 		for _, v := range relevantVehicles {
-			if strings.Contains(strings.ToLower(valRes.SanitizedReply), strings.ToLower(v.Model)) {
+			if v.Status == "available" && strings.Contains(lowerReply, strings.ToLower(v.Model)) {
 				referencedVehicleID = v.ID
 				break
+			}
+		}
+		if referencedVehicleID == "" {
+			for _, v := range relevantVehicles {
+				if v.Status == "available" {
+					referencedVehicleID = v.ID
+					break
+				}
 			}
 		}
 		if referencedVehicleID == "" {

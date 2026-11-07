@@ -173,3 +173,95 @@ func TestFastPath_M1_MarketplaceGoldenPhrases(t *testing.T) {
 		}
 	}
 }
+
+func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
+	now := time.Date(2026, 11, 7, 15, 0, 0, 0, time.UTC)
+	cache := inventory.NewSeededStubCache(now)
+	eng := NewEngine(DefaultBusinessTexts(), 0.80)
+	ctx := context.Background()
+
+	cases := []struct {
+		phrase       string
+		wantHandled  bool
+		wantEscalate bool
+		wantContains string
+	}{
+		// 1. Casos reales reportados por el usuario en Messenger/Marketplace con símbolos, espacios dobles y cortos
+		{"Hola Buen día", true, false, "https://buyacar.com.co"},
+		{"ayuda", true, false, "BuyaCAR en Tunja"},
+		{"tiene una mazda  3?", true, false, "80000000"},
+		{"¿Tienen Mazda 3?", true, false, "80000000"},
+		{"mazda 3{", true, false, "80000000"},
+		{"*mazda-3*", true, false, "80000000"},
+		{"[masda 3]", true, false, "80000000"},
+
+		// 2. Variaciones ortográficas, saludos informales y solicitudes de asesor/información
+		{"hol", true, false, "https://buyacar.com.co"},
+		{"holaaa buenas", true, false, "https://buyacar.com.co"},
+		{"ola buenendia", true, false, "https://buyacar.com.co"},
+		{"info", true, false, "https://buyacar.com.co"},
+		{"quiero informacion por favor", true, false, "https://buyacar.com.co"},
+		{"me colaboras con un asesor", true, false, "https://buyacar.com.co"},
+		{"catalogo", true, false, "https://buyacar.com.co"},
+		{"inventario", true, false, "https://buyacar.com.co"},
+		{"busco un carro", true, false, "https://buyacar.com.co"},
+
+		// 3. Typos fonéticos en marcas y modelos compuestos reales del inventario
+		{"que vale la toyta hailux?", true, false, "185000000"},
+		{"tienen chebrolet traker?", true, false, "86000000"},
+		{"precio del reno sandero", true, false, "54000000"},
+		{"tienen renaul doster?", true, false, "72000000"}, // Resuelve Duster 2021 disponible sobre 2020 vendida
+		{"cuanto vale la nisan x trail?", true, false, "89000000"},
+		{"precio de la nisan kashkai", true, false, "148000000"},
+		{"tienen onda cr v?", true, false, "43000000"},
+		{"precio del mercedez c 200", true, false, "49000000"},
+		{"tienen mercedes b 180?", true, false, "42000000"},
+		{"tienen audi a 3?", true, false, "34000000"},
+		{"tienen peugot 207?", true, false, "26000000"},
+		{"precio de la hiunday santa fe", true, false, "45000000"},
+		{"cuanto piden por el kya pikanto?", true, false, "46000000"},
+		{"tienen volsvagen tiguan?", true, false, "75000000"},
+
+		// 4. Consultas abiertas por marca (sin modelo específico) -> resumen multimodelo verificado
+		{"¿Qué Mazda tienen?", true, false, "Mazda3 2021"},
+		{"¿Tienen Chevrolet disponibles?", true, false, "Tracker 2022"},
+		{"¿Qué Renault manejan?", true, false, "Duster 2021"},
+		{"¿Qué Toyota tienen?", true, false, "Hilux 2022"},
+		{"¿Tienen Kia?", true, false, "Picanto 2022"},
+		{"¿Qué Nissan tienen?", true, false, "Qashqai 2026"},
+		{"¿Tienen Ford?", true, false, "Escape 2017"},
+
+		// 5. Consultas por segmento, carrocería, transmisión, tracción y presupuesto
+		{"¿Tienen camionetas de 7 pasajeros?", true, false, "Fortuner 2024"},
+		{"¿Qué camionetas 4x4 o diésel tienen?", true, false, "Hilux 2022"},
+		{"¿Tienen automóviles económicos o sedán?", true, false, "Picanto 2022"},
+		{"Tengo 50 millones de presupuesto, ¿qué carros tienen?", true, false, "Logan 2022"},
+		{"¿Qué carros de caja mecánica manejan?", true, false, "Duster 2021"},
+
+		// 6. Ubicación, horarios, contacto y financiación con errores ortográficos
+		{"cual es la ubicasion o dirrecion en tunja?", true, false, "Cra. 6 #52-23"},
+		{"tienen financiasion con bancos?", true, false, "Bancolombia"},
+		{"cual es el wasap o wpp?", true, false, "3151212223"},
+	}
+
+	for i, tc := range cases {
+		cl := triage.Classify(tc.phrase)
+		res := eng.Evaluate(ctx, cl, cache, now)
+		if res.Handled != tc.wantHandled {
+			t.Errorf("case #%d (%q): Handled=%v, want %v (norm=%q, intent=%s, query=%+v)",
+				i+1, tc.phrase, res.Handled, tc.wantHandled, cl.NormalizedText, cl.Intent, cl.ExtractedQuery)
+		}
+		if res.MustEscalate != tc.wantEscalate {
+			t.Errorf("case #%d (%q): MustEscalate=%v, want %v (reason=%s)",
+				i+1, tc.phrase, res.MustEscalate, tc.wantEscalate, res.EscalationReason)
+		}
+		if tc.wantContains != "" && !strings.Contains(res.Reply, tc.wantContains) {
+			t.Errorf("case #%d (%q): Reply=%q does not contain %q",
+				i+1, tc.phrase, res.Reply, tc.wantContains)
+		}
+		if res.Handled && len([]rune(res.Reply)) > 450 {
+			t.Errorf("case #%d (%q): Reply rune length %d exceeds 450 char Instagram/Marketplace safe limit",
+				i+1, tc.phrase, len([]rune(res.Reply)))
+		}
+	}
+}
