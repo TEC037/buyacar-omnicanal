@@ -250,6 +250,63 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 			}
 		}
 		out, _ := pipe.ProcessConversation(wCtx, subCh, sess, conv, start.UTC())
+
+		// Leer hilo para RAG / Handoff de escalamiento / CRM
+		th, thErr := subCh.Read(wCtx, sess, conv)
+		lastText := ""
+		var priorTexts []string
+		if thErr == nil && len(th.Messages) > 0 {
+			lastText = th.Messages[len(th.Messages)-1].Text
+			for i := 0; i < len(th.Messages)-1; i++ {
+				if th.Messages[i].Sender != "own" {
+					priorTexts = append(priorTexts, th.Messages[i].Text)
+				}
+			}
+		}
+
+		// Síntesis RAG determinista o respuesta comercial inmediata de handoff cuando la conversación escala sin respuesta
+		if out.Escalated && out.SentReply == "" && lastText != "" {
+			if out.EscalationReason == "ai_providers_failed_or_exhausted" || strings.Contains(out.EscalationReason, "failed") {
+				scoredRAG, _ := ragEng.Retrieve(wCtx, rag.Query{Text: lastText, TopK: 2, MaxTokens: 250})
+				if len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.30 {
+					synth := core.SynthesizeFromRAGChunk(scoredRAG[0].Chunk)
+					chk := pipe.Guard.ValidateOutboxWithBackedNumbers(synth, chID, nil, ragEng.GetBackedNumbers())
+					if chk.Approved {
+						out.Escalated = false
+						out.EscalationReason = ""
+						out.SentReply = chk.SanitizedReply
+						out.UsedAI = true
+						if res, rErr := subCh.Reply(wCtx, sess, conv, channel.Message{
+							ID:        fmt.Sprintf("reply-%s-%d", conv.ID, start.UnixNano()),
+							Sender:    "own",
+							Text:      chk.SanitizedReply,
+							Timestamp: start.UTC(),
+						}, eng.OperatingMode()); rErr == nil {
+							out.SendStatus = res.Status
+						}
+					}
+				}
+			}
+			if out.Escalated && out.SentReply == "" {
+				clWebhook := triage.ClassifyWithContext(guard.CleanIncomingNoise(lastText), priorTexts)
+				handoffReply, backedVehs := fast.BuildEscalationHandoffReply(wCtx, out.EscalationReason, clWebhook, invCache, start.UTC())
+				if handoffReply != "" {
+					chk := pipe.Guard.ValidateOutboxWithBackedNumbers(handoffReply, chID, backedVehs, ragEng.GetBackedNumbers())
+					if chk.Approved {
+						out.SentReply = chk.SanitizedReply
+						if res, rErr := subCh.Reply(wCtx, sess, conv, channel.Message{
+							ID:        fmt.Sprintf("reply-esc-%s-%d", conv.ID, start.UnixNano()),
+							Sender:    "own",
+							Text:      chk.SanitizedReply,
+							Timestamp: start.UTC(),
+						}, eng.OperatingMode()); rErr == nil {
+							out.SendStatus = res.Status
+						}
+					}
+				}
+			}
+		}
+
 		lastWebhookMu.Lock()
 		lastWebhookOutcome = out
 		lastWebhookMu.Unlock()
@@ -258,11 +315,6 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		obsCollector.RecordOutcome(out.UsedFastPath, out.UsedAI, out.Escalated, out.EscalationReason, out.Skipped, out.SkipReason, out.InputTokens, out.OutputTokens)
 
 		// Actualizar perfil de CRM / embudo de ventas para trazabilidad en vivo
-		th, thErr := subCh.Read(wCtx, sess, conv)
-		lastText := ""
-		if thErr == nil && len(th.Messages) > 0 {
-			lastText = th.Messages[len(th.Messages)-1].Text
-		}
 		intentScore, stage := crm.CalculateIntentScore(lastText, "", 1)
 		detectedPhone := crm.ExtractColombianPhone(lastText)
 		leadStore.UpsertLead(wCtx, crm.LeadProfile{
@@ -277,7 +329,7 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 			LastInteraction: time.Now().UTC(),
 		})
 
-		if out.SentReply != "" && !out.Escalated {
+		if out.SentReply != "" {
 			metricsExporter.IncrementChannelMessages(chID)
 			status := "pending"
 			subjPrefix := "Marketplace/Meta"
@@ -502,6 +554,17 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 				out.EscalationReason = ""
 				out.SentReply = chk.SanitizedReply
 				out.UsedAI = true
+			}
+		}
+
+		// Respuesta comercial inmediata de desambiguación o handoff cuando la consulta escala sin respuesta
+		if out.Escalated && out.SentReply == "" {
+			handoffReply, backedVehs := fast.BuildEscalationHandoffReply(cCtx, out.EscalationReason, cl, invCache, start.UTC())
+			if handoffReply != "" {
+				chk := pipe.Guard.ValidateOutboxWithBackedNumbers(handoffReply, "facebook_marketplace", backedVehs, ragEng.GetBackedNumbers())
+				if chk.Approved {
+					out.SentReply = chk.SanitizedReply
+				}
 			}
 		}
 

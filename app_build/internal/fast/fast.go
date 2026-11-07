@@ -238,13 +238,104 @@ func formatBrandSummaryReply(brand string, vehicles []inventory.Vehicle) string 
 }
 
 func formatVehicleTitle(v inventory.Vehicle) string {
-	if strings.EqualFold(v.Model, "Mazda3") {
+	switch {
+	case strings.EqualFold(v.Model, "Mazda3"):
 		return "Mazda 3"
+	case strings.EqualFold(v.Model, "Mazda2"):
+		return "Mazda 2"
+	case strings.EqualFold(v.Model, "Mazda6"):
+		return "Mazda 6"
 	}
-	if strings.HasPrefix(strings.ToLower(v.Model), strings.ToLower(v.Brand)) {
+	if v.Brand != "" && strings.HasPrefix(strings.ToLower(v.Model), strings.ToLower(v.Brand)) {
 		return v.Model
 	}
 	return strings.TrimSpace(v.Brand + " " + v.Model)
+}
+
+// BuildEscalationHandoffReply construye una respuesta comercial inmediata y coherente cuando una consulta
+// requiere escalamiento humano o desambiguacion (ej. multiples anos de un modelo o referencia agotada),
+// garantizando que el cliente nunca quede en silencio mientras el caso se escala al asesor.
+func BuildEscalationHandoffReply(ctx context.Context, reason string, cl triage.Classification, cache *inventory.Cache, now time.Time) (string, []inventory.Vehicle) {
+	switch reason {
+	case "prompt_injection_detected":
+		return "", nil
+
+	case "multiple_matches_disambiguation_required":
+		if cache != nil {
+			match := cache.Search(ctx, cl.ExtractedQuery, now)
+			var avail []inventory.Vehicle
+			for _, v := range match.Vehicles {
+				if v.Status == "available" {
+					avail = append(avail, v)
+				}
+			}
+			if len(avail) >= 2 {
+				var b strings.Builder
+				title := formatVehicleTitle(avail[0])
+				fmt.Fprintf(&b, "¡Hola! En BuyaCAR en Tunja tenemos %d unidades de %s certificadas disponibles:\n\n", len(avail), title)
+				maxItems := 3
+				if len(avail) < maxItems {
+					maxItems = len(avail)
+				}
+				for i := 0; i < maxItems; i++ {
+					v := avail[i]
+					fmt.Fprintf(&b, "- Modelo %d: $%d COP (%d km, %s)\n", v.Year, v.PriceCOP, v.MileageKm, v.Transmission)
+				}
+				b.WriteString("\nCatálogo: https://buyacar.com.co\n¿Cuál de los modelos te interesa para agendar prueba de ruta? (WhatsApp 3151212223).")
+				return b.String(), avail[:maxItems]
+			}
+		}
+
+	case "vehicle_not_found_in_inventory":
+		reqTitle := formatVehicleTitle(inventory.Vehicle{
+			Brand: cl.ExtractedQuery.Brand,
+			Model: cl.ExtractedQuery.Model,
+		})
+		if cl.ExtractedQuery.Year > 0 {
+			reqTitle = strings.TrimSpace(fmt.Sprintf("%s %d", reqTitle, cl.ExtractedQuery.Year))
+		}
+		if cl.ExtractedQuery.Brand != "" && cache != nil {
+			brandMatch := cache.Search(ctx, inventory.Query{Brand: cl.ExtractedQuery.Brand}, now)
+			var avail []inventory.Vehicle
+			for _, v := range brandMatch.Vehicles {
+				if v.Status == "available" {
+					avail = append(avail, v)
+				}
+			}
+			if len(avail) > 0 {
+				var b strings.Builder
+				fmt.Fprintf(&b, "¡Hola! Por el momento no tenemos %s en stock en Tunja, pero contamos con estas opciones %s certificadas:\n\n", reqTitle, cl.ExtractedQuery.Brand)
+				maxItems := 3
+				if len(avail) < maxItems {
+					maxItems = len(avail)
+				}
+				for i := 0; i < maxItems; i++ {
+					v := avail[i]
+					fmt.Fprintf(&b, "- %s %d: $%d COP (%s)\n", formatVehicleTitle(v), v.Year, v.PriceCOP, v.Transmission)
+				}
+				b.WriteString("\nCatálogo: https://buyacar.com.co\n¿Te interesa alguna o te avisamos cuando ingrese al WhatsApp 3151212223?")
+				return b.String(), avail[:maxItems]
+			}
+		}
+		if reqTitle == "" {
+			reqTitle = "esa referencia"
+		}
+		return fmt.Sprintf("¡Hola! Por el momento no tenemos %s disponible en nuestra vitrina de Tunja.\n\n- Puedes ver las camionetas y automóviles certificados disponibles hoy en https://buyacar.com.co\n- Déjanos tu número o escríbenos al WhatsApp 3151212223 para ofrecerte alternativas similares.", reqTitle), nil
+
+	case "trade_in_appraisal_required":
+		return "¡Hola! Claro que sí, en BuyaCAR en Tunja recibimos tu vehículo usado en parte de pago (sujeto a peritaje técnico en nuestra vitrina: Av. Oriental - Cra. 6 #52-23, frente a la Toyota).\n\nUn asesor comercial ya recibió tu solicitud. ¿Qué modelo, año y kilometraje tiene tu carro, o a qué WhatsApp te contactamos? (Línea: 3151212223).", nil
+
+	case "discount_or_min_price_request":
+		return "¡Hola! Hemos asignado tu consulta a un asesor comercial de BuyaCAR en Tunja para revisar personalmente tu propuesta sobre el precio.\n\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota)\n- WhatsApp directo: 3151212223\n\n¿A qué número de WhatsApp te podemos contactar de inmediato?", nil
+
+	case "credit_study_or_risk_central":
+		return "¡Hola! Hemos asignado tu consulta a nuestro especialista de financiación en BuyaCAR en Tunja para revisar tu caso con nuestros bancos aliados.\n\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota)\n- WhatsApp directo: 3151212223\n\n¿A qué número de WhatsApp te contactamos para brindarte asesoría personalizada?", nil
+
+	case "legal_claim_or_fasecolda":
+		return "¡Hola! Todos los vehículos de BuyaCAR en Tunja cuentan con peritaje de 150 puntos e historial verificado.\n\nHemos escalado tu consulta a un asesor especializado para brindarte soporte detallado. Escríbenos al WhatsApp 3151212223 o déjanos tu número de contacto.", nil
+	}
+
+	return "¡Hola! Bienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\nUn asesor comercial te atenderá en breve para resolver tu consulta en detalle. También puedes ver nuestro catálogo en https://buyacar.com.co o escribirnos al WhatsApp 3151212223.", nil
 }
 
 func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {

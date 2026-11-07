@@ -197,7 +197,7 @@ func TestRunCLI_MarketplaceCopilotEndpoint_M2(t *testing.T) {
 		t.Fatalf("expected RAG-backed warranty reply, got: %s", string(rawRAG))
 	}
 
-	// 3. Consulta de regateo en Marketplace -> escalamiento obligatorio
+	// 3. Consulta de regateo en Marketplace -> escalamiento obligatorio con respuesta de handoff comercial
 	reqEsc := `{"channel_id":"facebook_marketplace","customer_alias":"Comprador_Regateo","message":"¿Cuánto es lo menos por la Toyota Hilux 2022?"}`
 	respEsc, err := http.Post("http://127.0.0.1:18943/api/copilot/draft", "application/json", strings.NewReader(reqEsc))
 	if err != nil {
@@ -205,8 +205,20 @@ func TestRunCLI_MarketplaceCopilotEndpoint_M2(t *testing.T) {
 	}
 	rawEsc, _ := io.ReadAll(respEsc.Body)
 	respEsc.Body.Close()
-	if !strings.Contains(string(rawEsc), `"escalated":true`) {
-		t.Fatalf("expected discount query to escalate, got: %s", string(rawEsc))
+	if !strings.Contains(string(rawEsc), `"escalated":true`) || !strings.Contains(string(rawEsc), "3151212223") {
+		t.Fatalf("expected discount query to escalate with commercial handoff, got: %s", string(rawEsc))
+	}
+
+	// 4. Consulta de modelo con múltiples años (Mazda CX-5) -> desambiguación inmediata con precios de ambos años
+	reqDisamb := `{"channel_id":"facebook_marketplace","customer_alias":"Comprador_CX5","message":"¿Tienen Mazda CX-5?"}`
+	respDisamb, err := http.Post("http://127.0.0.1:18943/api/copilot/draft", "application/json", strings.NewReader(reqDisamb))
+	if err != nil {
+		t.Fatalf("POST /api/copilot/draft disambiguate failed: %v", err)
+	}
+	rawDisamb, _ := io.ReadAll(respDisamb.Body)
+	respDisamb.Body.Close()
+	if !strings.Contains(string(rawDisamb), "118000000") || !strings.Contains(string(rawDisamb), "142000000") {
+		t.Fatalf("expected CX-5 disambiguation with both 2021 and 2023 prices, got: %s", string(rawDisamb))
 	}
 
 	cancel()
@@ -424,14 +436,16 @@ func TestRunCLI_WebConsole_OneClickAutopilotAndSignedWebhookSimulation(t *testin
 	if err != nil {
 		t.Fatalf("POST /api/webhook/simulate failed: %v", err)
 	}
-	defer whResp.Body.Close()
 	if whResp.StatusCode != http.StatusOK {
+		whResp.Body.Close()
 		t.Fatalf("expected 200 OK from /api/webhook/simulate, got %d", whResp.StatusCode)
 	}
 
 	var result map[string]any
-	if err := json.NewDecoder(whResp.Body).Decode(&result); err != nil {
-		t.Fatalf("failed to decode /api/webhook/simulate response: %v", err)
+	decodeErr := json.NewDecoder(whResp.Body).Decode(&result)
+	whResp.Body.Close()
+	if decodeErr != nil {
+		t.Fatalf("failed to decode /api/webhook/simulate response: %v", decodeErr)
 	}
 	if result["operating_mode"] != "AUTOPILOT" {
 		t.Fatalf("expected operating_mode AUTOPILOT, got %v", result["operating_mode"])
