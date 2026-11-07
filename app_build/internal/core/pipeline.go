@@ -731,7 +731,7 @@ func (p *Pipeline) settleCRMTasks(
 func SynthesizeFromRAGChunk(chunk rag.Chunk) string {
 	titleLower := strings.ToLower(strings.TrimSpace(chunk.Title))
 	switch {
-	case strings.Contains(titleLower, "cobertura de garant"):
+	case strings.Contains(titleLower, "cobertura de garant") || strings.Contains(titleLower, "políticas de garant") || strings.Contains(titleLower, "politicas de garant"):
 		return "En BuyaCAR en Tunja tu vehículo cuenta con garantía certificada:\n\n- Cobertura: 12 meses o 20000 km en motor y caja de cambios\n- Respaldo directo en nuestra red de talleres autorizados\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223."
 	case strings.Contains(titleLower, "exclusiones expresas"):
 		return "Sobre la garantía en BuyaCAR en Tunja:\n\n- Cubre motor y caja (12 meses o 20000 km)\n- No cubre piezas de desgaste normal (frenos, embrague, batería, llantas o suspensión)\n\n¿Deseas asesoría detallada? WhatsApp 3151212223 · https://buyacar.com.co"
@@ -743,7 +743,7 @@ func SynthesizeFromRAGChunk(chunk rag.Chunk) string {
 		return "Requisitos de financiación para empleados en BuyaCAR en Tunja:\n\n- Cédula, certificación laboral, extractos (3 meses) y desprendibles\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\n¿Hacemos tu pre-estudio? WhatsApp 3151212223 · https://buyacar.com.co"
 	case strings.Contains(titleLower, "requisitos para independientes"):
 		return "Requisitos de financiación para independientes en BuyaCAR en Tunja:\n\n- Cédula, RUT/Cámara de Comercio, declaración de renta y extractos (6 meses)\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nWhatsApp 3151212223 · https://buyacar.com.co"
-	case strings.Contains(titleLower, "condiciones financieras") || strings.Contains(titleLower, "bancos aliados"):
+	case strings.Contains(titleLower, "condiciones financieras") || strings.Contains(titleLower, "bancos aliados") || strings.Contains(titleLower, "política de financiac") || strings.Contains(titleLower, "politica de financiac"):
 		return "En BuyaCAR en Tunja financiamos hasta el 90% del vehículo:\n\n- Bancos aliados: Bancolombia (Sufi), Davivienda, Banco de Bogotá y Finandina\n- Plazos hasta 72 meses (simulación indicativa sujeta a estudio)\n\n¿Simulamos tu cuota? WhatsApp 3151212223 · https://buyacar.com.co"
 	case strings.Contains(titleLower, "peritaje"):
 		return "En BuyaCAR en Tunja todos los vehículos cuentan con peritaje técnico certificado:\n\n- Inspección de 150 puntos (estructura, chasis, motor, caja y antecedentes legales)\n- Garantía de cero siniestros estructurales y tradición 100% asegurable\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223."

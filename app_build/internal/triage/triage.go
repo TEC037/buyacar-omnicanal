@@ -308,6 +308,9 @@ func hasCustomerMobile(norm string) bool {
 	if containsAny(norm, "cedula", "cc ", "documento", "nit") {
 		return false
 	}
+	if strings.Contains(norm, "pii num redacted") {
+		return true
+	}
 	tokens := strings.Fields(norm)
 	for i := 0; i < len(tokens); i++ {
 		tok := tokens[i]
