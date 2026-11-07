@@ -493,13 +493,9 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		pipeCancel()
 
 		// Síntesis determinista respaldada por RAG cuando el proveedor LLM externo no está disponible o excede el SLA interactivo pero el RAG local tiene respuesta fáctica verificada
-		if out.Escalated && (out.EscalationReason == "ai_providers_failed_or_exhausted" || strings.Contains(out.EscalationReason, "failed")) && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.50 {
+		if out.Escalated && (out.EscalationReason == "ai_providers_failed_or_exhausted" || strings.Contains(out.EscalationReason, "failed")) && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.30 {
 			top := scoredRAG[0].Chunk
-			snippet := strings.TrimSpace(strings.ReplaceAll(top.Content, "\n", " "))
-			if runes := []rune(snippet); len(runes) > 260 {
-				snippet = string(runes[:260]) + "..."
-			}
-			synth := fmt.Sprintf("BuyaCAR Tunja (%s): %s WhatsApp 3151212223. Más info: https://buyacar.com.co", top.Title, snippet)
+			synth := core.SynthesizeFromRAGChunk(top)
 			chk := pipe.Guard.ValidateOutboxWithBackedNumbers(synth, "facebook_marketplace", nil, ragEng.GetBackedNumbers())
 			if chk.Approved {
 				out.Escalated = false

@@ -48,6 +48,7 @@ type Classification struct {
 
 var normReplacer = strings.NewReplacer(
 	"á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u", "ü", "u", "ñ", "n",
+	"\ufffd", " ",
 	"¿", " ", "?", " ", "¡", " ", "!", " ", ",", " ", ".", " ",
 	"[", " ", "]", " ", "(", " ", ")", " ", ":", " ", ";", " ",
 	"{", " ", "}", " ", "\"", " ", "'", " ", "*", " ", "/", " ",
@@ -57,12 +58,14 @@ var normReplacer = strings.NewReplacer(
 )
 
 var tokenAliases = map[string]string{
-	// Saludos y asistencia comercial
+	// Saludos, tildes truncadas y asistencia comercial
 	"hol":          "hola",
 	"ola":          "hola",
 	"holaa":        "hola",
 	"holaaa":       "hola",
 	"buendia":      "buen dia",
+	"da":           "dia",
+	"das":          "dias",
 	"info":         "informacion",
 	"infos":        "informacion",
 	"wpp":          "whatsapp",
@@ -70,8 +73,13 @@ var tokenAliases = map[string]string{
 	"whasap":       "whatsapp",
 	"ubicasion":    "ubicacion",
 	"dirrecion":    "direccion",
+	"direcion":     "direccion",
 	"financiasion": "financiacion",
+	"finansiacion": "financiacion",
 	"garatia":      "garantia",
+	"garantias":    "garantia",
+	"presio":       "precio",
+	"kilometrage":  "kilometraje",
 
 	// Marcas con errores ortograficos o abreviaciones frecuentes
 	"masda":     "mazda",
@@ -252,6 +260,12 @@ var (
 	contactKeywords = []string{
 		"whatsapp", "telefono", "numero de contacto", "celular", "llamar", "a que numero",
 	}
+	visitGeneralKeywords = []string{
+		"agendar cita", "agendar una cita", "apartar cita", "prueba de ruta", "test drive",
+		"ir a verlos", "pasar a verlos", "visitar la vitrina", "puedo ir hoy", "puedo ir manana",
+		"pasar hoy", "pasar manana", "ir a verlo", "ir a verla", "donde lo puedo ver",
+		"donde la puedo ver", "puedo verlo", "puedo verla", "ver el carro", "ver la camioneta",
+	}
 	greetingKeywords = []string{
 		"hola ", "buenas ", "buenos dias", "buen dia", "buenas tardes", "buenas noches",
 		"sigue disponible", "esta disponible", "todavia esta disponible", "hola sigue disponible", "hola buen dia", "hola buenos dias",
@@ -260,8 +274,96 @@ var (
 		"quiero informacion", "mas informacion", "me das informacion", "regalame informacion", "solicito informacion", "brindame informacion",
 		"hablar con un asesor", "necesito un asesor", "asesoria",
 		"busco un carro", "busco carro", "busco vehiculo", "quiero comprar carro", "quiero comprar un carro", "venden carros",
+		"muchas gracias", "mil gracias", "ok gracias", "listo gracias", "quedo atento", "quedo atenta", "estare atento", "estare atenta", "muy amable", "muy amables",
 	}
 )
+
+func isDigitsOnly(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidCustomerMobile10(d string) bool {
+	if len(d) != 10 || !isDigitsOnly(d) {
+		return false
+	}
+	if d[0] != '3' || d[1] < '0' || d[1] > '5' {
+		return false
+	}
+	// Excluir lineas oficiales de BuyaCAR
+	if d == "3151212223" || d == "3022866969" || d == "3160502717" {
+		return false
+	}
+	return true
+}
+
+func hasCustomerMobile(norm string) bool {
+	if containsAny(norm, "cedula", "cc ", "documento", "nit") {
+		return false
+	}
+	tokens := strings.Fields(norm)
+	for i := 0; i < len(tokens); i++ {
+		tok := tokens[i]
+		if len(tok) == 12 && strings.HasPrefix(tok, "57") && isValidCustomerMobile10(tok[2:]) {
+			return true
+		}
+		if isValidCustomerMobile10(tok) {
+			return true
+		}
+		if i+2 < len(tokens) && len(tok) == 3 && len(tokens[i+1]) == 3 && len(tokens[i+2]) == 4 {
+			if isValidCustomerMobile10(tok + tokens[i+1] + tokens[i+2]) {
+				return true
+			}
+		}
+		if i+1 < len(tokens) && len(tok) == 3 && len(tokens[i+1]) == 7 {
+			if isValidCustomerMobile10(tok + tokens[i+1]) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var courtesyAllowedTokens = map[string]bool{
+	"gracias": true, "muchas": true, "mil": true, "ok": true, "okay": true,
+	"listo": true, "vale": true, "perfecto": true, "entendido": true, "dale": true,
+	"bueno": true, "super": true, "excelente": true, "genial": true, "bien": true,
+	"quedo": true, "estare": true, "atento": true, "atenta": true, "muy": true,
+	"amable": true, "amables": true, "feliz": true, "dia": true, "tarde": true,
+	"noche": true, "bendiciones": true, "chao": true, "hasta": true, "luego": true,
+}
+
+var courtesyCoreTokens = map[string]bool{
+	"gracias": true, "ok": true, "okay": true, "listo": true, "vale": true,
+	"perfecto": true, "entendido": true, "dale": true, "excelente": true,
+	"genial": true, "atento": true, "atenta": true, "amable": true, "amables": true,
+	"bendiciones": true, "chao": true,
+}
+
+// IsCourtesyOnly indica si el mensaje normalizado es un agradecimiento o cierre conversacional breve.
+func IsCourtesyOnly(norm string) bool {
+	tokens := strings.Fields(norm)
+	if len(tokens) == 0 || len(tokens) > 5 {
+		return false
+	}
+	hasCore := false
+	for _, t := range tokens {
+		if !courtesyAllowedTokens[t] {
+			return false
+		}
+		if courtesyCoreTokens[t] {
+			hasCore = true
+		}
+	}
+	return hasCore
+}
 
 // Classify ejecuta el triage determinista priorizando seguridad (anti-injection y escalamiento obligatorio).
 func Classify(raw string) Classification {
@@ -333,6 +435,16 @@ func Classify(raw string) Classification {
 	// 3. Intenciones faciles sin requerir vehiculo especifico
 	isPolicyOrWorkshopQuery := containsAny(norm, policyExcludeKeywords...)
 
+	if !isPolicyOrWorkshopQuery && q.Brand == "" && q.Model == "" && (hasCustomerMobile(norm) || containsAny(norm, visitGeneralKeywords...)) {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentVisit,
+			Confidence:     0.92,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+
 	if !isPolicyOrWorkshopQuery && q.Brand == "" && q.Model == "" && containsAny(norm, categoryKeywords...) {
 		return Classification{
 			NormalizedText: norm,
@@ -383,7 +495,7 @@ func Classify(raw string) Classification {
 
 	// 4. Intenciones faciles sobre inventario
 	if q.Brand != "" || q.Model != "" {
-		if containsAny(norm, "precio", "cuanto vale", "cuanto cuesta", "valor", "en cuanto esta", "que vale", "que cuesta", "cuanto piden", "a como") {
+		if containsAny(norm, "precio", "cuanto vale", "cuanto cuesta", "valor", "en cuanto esta", "que vale", "que cuesta", "cuanto piden", "a como", "que precio") {
 			return Classification{
 				NormalizedText: norm,
 				Intent:         IntentPrice,
@@ -392,7 +504,7 @@ func Classify(raw string) Classification {
 				ExtractedQuery: q,
 			}
 		}
-		if containsAny(norm, "kilometraje", "cuantos kilometros", "kilometros", "km", "recorrido") {
+		if containsAny(norm, "kilometraje", "cuantos kilometros", "kilometros", "km", "recorrido", "cuanto recorrido") {
 			return Classification{
 				NormalizedText: norm,
 				Intent:         IntentMileage,
@@ -401,7 +513,7 @@ func Classify(raw string) Classification {
 				ExtractedQuery: q,
 			}
 		}
-		if containsAny(norm, "soat", "tecnomecanica", "tecno", "placa", "papeles", "impuestos", "pico y placa") {
+		if containsAny(norm, "soat", "tecnomecanica", "tecno", "placa", "papeles", "impuestos", "pico y placa", "matriculado", "matricula", "de donde es", "donde es la placa", "al dia") {
 			return Classification{
 				NormalizedText: norm,
 				Intent:         IntentDocs,
@@ -410,7 +522,7 @@ func Classify(raw string) Classification {
 				ExtractedQuery: q,
 			}
 		}
-		if containsAny(norm, "transmision", "caja", "motor", "traccion", "4x4", "color", "cilindraje", "combustible", "ficha tecnica", "caracteristicas") {
+		if containsAny(norm, "transmision", "caja", "motor", "traccion", "4x4", "color", "cilindraje", "combustible", "ficha tecnica", "caracteristicas", "automatico", "automatica", "mecanico", "mecanica", "gasolina", "diesel", "version", "cojineria", "equipamiento") {
 			return Classification{
 				NormalizedText: norm,
 				Intent:         IntentSpecs,
@@ -419,7 +531,7 @@ func Classify(raw string) Classification {
 				ExtractedQuery: q,
 			}
 		}
-		if containsAny(norm, "donde lo puedo ver", "donde la puedo ver", "puedo verlo", "puedo verla", "prueba de ruta", "test drive", "agendar cita", "ver el carro", "ver la camioneta", "ir a verlo", "ir a verla") {
+		if hasCustomerMobile(norm) || containsAny(norm, visitGeneralKeywords...) {
 			return Classification{
 				NormalizedText: norm,
 				Intent:         IntentVisit,
@@ -438,10 +550,10 @@ func Classify(raw string) Classification {
 		}
 	}
 
-	// 5. Saludos, solicitud de ayuda, asesor humano o informacion general de vitrina
+	// 5. Saludos, cortesias, solicitud de ayuda, asesor humano o informacion general de vitrina
 	if !isPolicyOrWorkshopQuery && (norm == "hola" || norm == "buenas" || norm == "buenos dias" || norm == "buen dia" || norm == "buenas tardes" || norm == "buenas noches" ||
 		norm == "ayuda" || norm == "informacion" || norm == "asesor" || norm == "catalogo" || norm == "inventario" || norm == "disponible" ||
-		containsAny(norm, greetingKeywords...)) {
+		IsCourtesyOnly(norm) || containsAny(norm, greetingKeywords...)) {
 		return Classification{
 			NormalizedText: norm,
 			Intent:         IntentGreeting,
@@ -467,14 +579,21 @@ func ClassifyWithContext(raw string, priorTexts []string) Classification {
 	if cl.MustEscalate || cl.ExtractedQuery.Brand != "" || cl.ExtractedQuery.Model != "" || len(priorTexts) == 0 {
 		return cl
 	}
-	if cl.Intent == IntentLocation || cl.Intent == IntentHours || cl.Intent == IntentContact {
+	if cl.Intent == IntentLocation || cl.Intent == IntentHours || cl.Intent == IntentContact || cl.Intent == IntentCreditGeneral {
+		return cl
+	}
+	if cl.Intent == IntentGreeting && IsCourtesyOnly(cl.NormalizedText) {
 		return cl
 	}
 
 	for i := len(priorTexts) - 1; i >= 0; i-- {
 		pq := extractVehicleQuery(Normalize(priorTexts[i]))
 		if pq.Brand != "" || pq.Model != "" {
-			combined := priorTexts[i] + " " + raw
+			vehPrefix := strings.TrimSpace(pq.Brand + " " + pq.Model)
+			if pq.Year > 0 {
+				vehPrefix = vehPrefix + " " + strconv.Itoa(pq.Year)
+			}
+			combined := vehPrefix + " " + raw
 			reCl := Classify(combined)
 			if !reCl.MustEscalate {
 				reCl.NormalizedText = cl.NormalizedText

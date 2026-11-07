@@ -95,10 +95,25 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 			InventoryStatus: inventory.StatusVehicleNotRequired,
 		}
 	case triage.IntentGreeting:
+		if triage.IsCourtesyOnly(cl.NormalizedText) {
+			return Result{
+				Handled:         true,
+				Reply:           "¡Con mucho gusto! En BuyaCAR en Tunja (Av. Oriental - Cra. 6 #52-23, frente a la Toyota) estamos para servirte.\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223. ¡Que tengas un excelente día!",
+				InventoryStatus: inventory.StatusVehicleNotRequired,
+			}
+		}
 		return Result{
 			Handled:         true,
 			Reply:           e.texts.GreetingReply,
 			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
+	case triage.IntentVisit:
+		if cl.ExtractedQuery.Brand == "" && cl.ExtractedQuery.Model == "" {
+			return Result{
+				Handled:         true,
+				Reply:           "¡Perfecto! Hemos registrado tu solicitud. Te contactaremos de inmediato desde nuestro WhatsApp oficial 3151212223 para coordinar tu cita.\n\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota), Tunja\n- Catálogo: https://buyacar.com.co",
+				InventoryStatus: inventory.StatusVehicleNotRequired,
+			}
 		}
 	case triage.IntentCreditGeneral:
 		return Result{

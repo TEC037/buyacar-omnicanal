@@ -321,7 +321,7 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 		}
 
 		// Estrategia A2 (RAG-Direct Synthesizer puro sin llamar LLM)
-		if p.Strategy == "A2_rag_synth" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.50 {
+		if p.Strategy == "A2_rag_synth" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.30 {
 			candidateReply = SynthesizeFromRAGChunk(scoredRAG[0].Chunk)
 			dur4 := time.Since(t4)
 			outcome.TokenStatus = "zero_cached"
@@ -366,8 +366,8 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 				outcome.TokenStatus = "not_measured"
 			}
 
-			// Fallback autónomo A4 (Cascada Adaptativa): si el proveedor LLM no está activo pero el RAG local tiene match fáctico >= 0.50, sintetiza determinísticamente
-			if aiRes.Escalated && (aiRes.Reason == "both_ai_providers_failed" || aiRes.Reason == "ai_providers_failed_or_exhausted") && p.Strategy != "A3_llm_only" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.50 {
+			// Fallback autónomo A4/A2 (Cascada Adaptativa): si el proveedor LLM no está activo pero el RAG local tiene match fáctico >= 0.30, sintetiza determinísticamente
+			if aiRes.Escalated && (aiRes.Reason == "both_ai_providers_failed" || aiRes.Reason == "ai_providers_failed_or_exhausted") && p.Strategy != "A3_llm_only" && len(scoredRAG) > 0 && scoredRAG[0].Score >= 0.30 {
 				candidateReply = SynthesizeFromRAGChunk(scoredRAG[0].Chunk)
 				outcome.TokenStatus = "zero_cached"
 				_ = p.saveCheckpoint(conv.ID, "cp4_respuesta:ok")
@@ -375,6 +375,13 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 				outcome.CheckpointsOK++
 			} else if aiRes.Escalated && fpFallbackReply != "" {
 				candidateReply = fpFallbackReply
+				outcome.UsedFastPath = true
+				outcome.TokenStatus = "zero_cached"
+				_ = p.saveCheckpoint(conv.ID, "cp4_respuesta:ok")
+				trace.RecordCheckpoint(obs.CPRespuesta, true, dur4, "", time.Now())
+				outcome.CheckpointsOK++
+			} else if aiRes.Escalated && (p.Strategy == "A2_rag_synth" || p.Strategy == "A4_adaptive") && (aiRes.Reason == "both_ai_providers_failed" || aiRes.Reason == "ai_providers_failed_or_exhausted") {
+				candidateReply = fast.DefaultBusinessTexts().GreetingReply
 				outcome.UsedFastPath = true
 				outcome.TokenStatus = "zero_cached"
 				_ = p.saveCheckpoint(conv.ID, "cp4_respuesta:ok")
@@ -720,13 +727,45 @@ func (p *Pipeline) settleCRMTasks(
 	return primaryTaskID
 }
 
-// SynthesizeFromRAGChunk construye una respuesta determinista fáctica (<= 480 caracteres) a partir del fragmento RAG verificado.
+// SynthesizeFromRAGChunk construye una respuesta determinista fáctica (<= 450 caracteres) a partir del fragmento RAG verificado.
 func SynthesizeFromRAGChunk(chunk rag.Chunk) string {
-	snippet := strings.TrimSpace(strings.ReplaceAll(chunk.Content, "\n", " "))
-	if runes := []rune(snippet); len(runes) > 250 {
-		snippet = string(runes[:250]) + "..."
+	titleLower := strings.ToLower(strings.TrimSpace(chunk.Title))
+	switch {
+	case strings.Contains(titleLower, "cobertura de garant"):
+		return "En BuyaCAR en Tunja tu vehículo cuenta con garantía certificada:\n\n- Cobertura: 12 meses o 20000 km en motor y caja de cambios\n- Respaldo directo en nuestra red de talleres autorizados\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223."
+	case strings.Contains(titleLower, "exclusiones expresas"):
+		return "Sobre la garantía en BuyaCAR en Tunja:\n\n- Cubre motor y caja (12 meses o 20000 km)\n- No cubre piezas de desgaste normal (frenos, embrague, batería, llantas o suspensión)\n\n¿Deseas asesoría detallada? WhatsApp 3151212223 · https://buyacar.com.co"
+	case strings.Contains(titleLower, "red de talleres"):
+		return "En BuyaCAR en Tunja contamos con red de talleres autorizados:\n\n- Atención directa en Tunja, Duitama y Sogamoso (Boyacá)\n- Diagnóstico especializado sin costo inicial dentro de cobertura\n\nCoordina tu revisión al WhatsApp 3151212223 · https://buyacar.com.co"
+	case strings.Contains(titleLower, "proceso de radicac"):
+		return "Para solicitar soporte de garantía en BuyaCAR en Tunja:\n\n- Escríbenos al WhatsApp 3151212223 indicando placa y kilometraje\n- Asignamos cita prioritaria en taller autorizado de Tunja\n\nMás información en https://buyacar.com.co"
+	case strings.Contains(titleLower, "requisitos de crédito para empleados") || strings.Contains(titleLower, "requisitos de credito para empleados"):
+		return "Requisitos de financiación para empleados en BuyaCAR en Tunja:\n\n- Cédula, certificación laboral, extractos (3 meses) y desprendibles\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\n¿Hacemos tu pre-estudio? WhatsApp 3151212223 · https://buyacar.com.co"
+	case strings.Contains(titleLower, "requisitos para independientes"):
+		return "Requisitos de financiación para independientes en BuyaCAR en Tunja:\n\n- Cédula, RUT/Cámara de Comercio, declaración de renta y extractos (6 meses)\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nWhatsApp 3151212223 · https://buyacar.com.co"
+	case strings.Contains(titleLower, "condiciones financieras") || strings.Contains(titleLower, "bancos aliados"):
+		return "En BuyaCAR en Tunja financiamos hasta el 90% del vehículo:\n\n- Bancos aliados: Bancolombia (Sufi), Davivienda, Banco de Bogotá y Finandina\n- Plazos hasta 72 meses (simulación indicativa sujeta a estudio)\n\n¿Simulamos tu cuota? WhatsApp 3151212223 · https://buyacar.com.co"
+	case strings.Contains(titleLower, "peritaje"):
+		return "En BuyaCAR en Tunja todos los vehículos cuentan con peritaje técnico certificado:\n\n- Inspección de 150 puntos (estructura, chasis, motor, caja y antecedentes legales)\n- Garantía de cero siniestros estructurales y tradición 100% asegurable\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223."
+	case strings.Contains(titleLower, "traspaso"):
+		return "En BuyaCAR en Tunja nos encargamos de todo el trámite de traspaso:\n\n- Gestión integral ante tránsito libre de comparendos, embargos e impuestos\n- Acompañamiento hasta la tarjeta de propiedad a tu nombre\n\nWhatsApp 3151212223 · https://buyacar.com.co"
+	case strings.Contains(titleLower, "medios de pago"):
+		return "En BuyaCAR en Tunja aceptamos medios de pago seguros:\n\n- Transferencia bancaria empresarial, cheque de gerencia y desembolso directo de bancos aliados\n- Vitrina: Av. Oriental - Cra. 6 #52-23, Tunja\n\nWhatsApp 3151212223 · https://buyacar.com.co"
 	}
-	return fmt.Sprintf("BuyaCAR Tunja (%s): %s WhatsApp 3151212223. Más info: https://buyacar.com.co", chunk.Title, snippet)
+
+	snippet := strings.TrimSpace(strings.ReplaceAll(chunk.Content, "\n", " "))
+	if strings.HasPrefix(strings.ToLower(snippet), titleLower) {
+		snippet = strings.TrimSpace(snippet[len(chunk.Title):])
+		snippet = strings.TrimLeft(snippet, ":-. ")
+	}
+	if runes := []rune(snippet); len(runes) > 240 {
+		cut := string(runes[:240])
+		if lastSpace := strings.LastIndex(cut, " "); lastSpace > 180 {
+			cut = cut[:lastSpace]
+		}
+		snippet = strings.TrimRight(cut, ",;.") + "."
+	}
+	return fmt.Sprintf("BuyaCAR en Tunja (%s):\n\n%s\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223.", chunk.Title, snippet)
 }
 
 func hasCompoundPolicyQuestion(norm string) bool {

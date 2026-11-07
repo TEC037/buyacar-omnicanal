@@ -242,6 +242,17 @@ func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
 		{"cual es la ubicasion o dirrecion en tunja?", true, false, "Cra. 6 #52-23"},
 		{"tienen financiasion con bancos?", true, false, "Bancolombia"},
 		{"cual es el wasap o wpp?", true, false, "3151212223"},
+
+		// 7. Entrega de número de WhatsApp del cliente, agendamiento de cita y cortesías
+		{"3104567890", true, false, "3151212223"},
+		{"mi whatsapp es 310 456 7890", true, false, "3151212223"},
+		{"escribeme al +573208765432", true, false, "3151212223"},
+		{"quiero agendar una cita para prueba de ruta", true, false, "Cra. 6 #52-23"},
+		{"puedo ir a verlos hoy?", true, false, "Cra. 6 #52-23"},
+		{"muchas gracias", true, false, "Con mucho gusto"},
+		{"ok gracias", true, false, "Con mucho gusto"},
+		{"listo perfecto", true, false, "https://buyacar.com.co"},
+		{"buen da", true, false, "Vehículos certificados"},
 	}
 
 	for i, tc := range cases {
@@ -263,5 +274,44 @@ func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
 			t.Errorf("case #%d (%q): Reply rune length %d exceeds 450 char Instagram/Marketplace safe limit",
 				i+1, tc.phrase, len([]rune(res.Reply)))
 		}
+	}
+}
+
+func TestMultiTurn_ConversationalCoherence_WithoutIntentPollution(t *testing.T) {
+	now := time.Date(2026, 11, 7, 16, 0, 0, 0, time.UTC)
+	cache := inventory.NewSeededStubCache(now)
+	eng := NewEngine(DefaultBusinessTexts(), 0.80)
+	ctx := context.Background()
+
+	var history []string
+	steps := []struct {
+		userMsg      string
+		wantIntent   triage.Intent
+		wantContains string
+	}{
+		{"buen día", triage.IntentGreeting, "Vehículos certificados"},
+		{"busco una mazda 3", triage.IntentAvailability, "Mazda3 modelo 2021"},
+		{"¿qué precio tiene?", triage.IntentPrice, "Precio: $80000000 COP"},
+		{"¿y cuántos kilómetros tiene?", triage.IntentMileage, "Kilometraje: 39000 km verificados"},
+		{"¿tiene SOAT y papeles al día?", triage.IntentDocs, "SOAT y tecnomecánica al día"},
+		{"¿es automático y qué motor tiene?", triage.IntentSpecs, "Automática | Motor: 2.0L Skyactiv-G"},
+		{"mi whatsapp es 310 456 7890", triage.IntentVisit, "prueba de ruta"},
+		{"muchas gracias", triage.IntentGreeting, "Con mucho gusto"},
+	}
+
+	for idx, st := range steps {
+		cl := triage.ClassifyWithContext(st.userMsg, history)
+		if cl.Intent != st.wantIntent {
+			t.Fatalf("turn %d (%q): got intent=%s, want=%s (norm=%q, query=%+v)",
+				idx+1, st.userMsg, cl.Intent, st.wantIntent, cl.NormalizedText, cl.ExtractedQuery)
+		}
+		res := eng.Evaluate(ctx, cl, cache, now)
+		if !res.Handled || res.MustEscalate {
+			t.Fatalf("turn %d (%q): expected Handled=true MustEscalate=false, got %+v", idx+1, st.userMsg, res)
+		}
+		if !strings.Contains(res.Reply, st.wantContains) {
+			t.Fatalf("turn %d (%q): reply %q does not contain %q", idx+1, st.userMsg, res.Reply, st.wantContains)
+		}
+		history = append(history, st.userMsg)
 	}
 }
