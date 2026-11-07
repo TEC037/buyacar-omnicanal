@@ -340,7 +340,14 @@ var (
 func extractVehicleQuery(norm string) inventory.Query {
 	var q inventory.Query
 
-	tokens := strings.Fields(norm)
+	// Normalizar variantes de nombres compuestos antes de tokenizar
+	compact := strings.ReplaceAll(norm, "mazda 3", "mazda3")
+	compact = strings.ReplaceAll(compact, "cx 5", "cx-5")
+	compact = strings.ReplaceAll(compact, "cx 30", "cx-30")
+	compact = strings.ReplaceAll(compact, "x trail", "x-trail")
+	compact = strings.ReplaceAll(compact, "cr v", "cr-v")
+
+	tokens := strings.Fields(compact)
 	for _, tok := range tokens {
 		if b, ok := knownBrands[tok]; ok {
 			q.Brand = b
