@@ -50,6 +50,7 @@ var normReplacer = strings.NewReplacer(
 	"á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u",
 	"¿", "", "?", "", "¡", "", "!", "", ",", " ", ".", " ",
 	"[", " ", "]", " ", "(", " ", ")", " ", ":", " ", ";", " ",
+	"{", " ", "}", " ", "\"", " ", "'", " ",
 )
 
 // Normalize limpia espacios, convierte a minusculas y elimina tildes basicas para matching sub-milisegundo.
