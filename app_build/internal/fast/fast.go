@@ -27,7 +27,7 @@ func DefaultBusinessTexts() BusinessTexts {
 		HoursReply:   "¡Hola! Nuestro horario de atención en Tunja (Cra. 6 #52-23, frente a la Toyota) es:\n\n- Lunes a Viernes: 8:00 AM a 6:00 PM (jornada continua)\n- Sábados: 8:00 AM a 2:00 PM\n- Domingos descansamos\n\nCatálogo: https://buyacar.com.co · WhatsApp 3151212223.",
 		ContactReply: "¡Claro que sí! Nuestras líneas oficiales de BuyaCAR en Tunja son:\n\n- WhatsApp Comercial: 3151212223\n- Atención Vitrina: 3022866969 / 3160502717\n- Catálogo web: https://buyacar.com.co\n\n¿Sobre qué vehículo te gustaría recibir asesoría?",
 		GreetingReply: "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\nPuedes consultar nuestro inventario actualizado con precios y fotos en https://buyacar.com.co\n\n¿Te llamó la atención algún modelo en particular para coordinar tu prueba de ruta?",
-		SoldVehicleNotice: "Te informamos que esta unidad ya fue vendido/separado en nuestra vitrina de Tunja.\n\nUn asesor humano te compartirá de inmediato alternativas similares certificadas. También puedes ver opciones disponibles en https://buyacar.com.co o al WhatsApp 3151212223.",
+		SoldVehicleNotice: "Te informamos que este vehículo ya fue vendido/separado en nuestra vitrina de Tunja.\n\nUn asesor humano te compartirá de inmediato alternativas similares certificadas. También puedes ver opciones disponibles en https://buyacar.com.co o al WhatsApp 3151212223.",
 		CreditGeneralReply: "En BuyaCAR en Tunja te ayudamos con financiación vehicular:\n\n- Convenios con bancos aliados (Bancolombia, Davivienda, Finandina)\n- Planes de cuota inicial desde el 10%-20% y simulación indicativa según perfil\n\nCatálogo: https://buyacar.com.co\n¿A qué WhatsApp te contactamos? (Línea: 3151212223).",
 		CategorySUVReply: "¡Hola! En BuyaCAR en Tunja contamos con camionetas y SUVs certificadas:\n\n- Toyota Hilux 4x4 y Fortuner\n- Mazda CX-5 y Mazda CX-30\n- Chevrolet Tracker y Captiva\n- Renault Duster y Nissan Qashqai\n\nVer precios y fotos: https://buyacar.com.co\n¿Cuál te gustaría agendar para prueba de ruta? (WhatsApp 3151212223).",
 	}
@@ -237,22 +237,33 @@ func formatBrandSummaryReply(brand string, vehicles []inventory.Vehicle) string 
 	return b.String()
 }
 
+func formatVehicleTitle(v inventory.Vehicle) string {
+	if strings.EqualFold(v.Model, "Mazda3") {
+		return "Mazda 3"
+	}
+	if strings.HasPrefix(strings.ToLower(v.Model), strings.ToLower(v.Brand)) {
+		return v.Model
+	}
+	return strings.TrimSpace(v.Brand + " " + v.Model)
+}
+
 func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {
+	title := formatVehicleTitle(v)
 	switch intent {
 	case triage.IntentPrice:
-		return fmt.Sprintf("¡Hola! Con mucho gusto:\n\n- %s %s modelo %d\n- Precio: $%d COP\n- Kilometraje: %d km (%s)\n\nRecibimos tu usado en permuta y financiamos. ¿A qué WhatsApp te enviamos fotos y coordinamos tu prueba de ruta en Tunja? (WhatsApp 3151212223). Ficha: %s",
-			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Con mucho gusto:\n\n- %s modelo %d\n- Precio: $%d COP\n- Kilometraje: %d km (%s)\n\nRecibimos tu usado en permuta y financiamos. ¿A qué WhatsApp te enviamos fotos y coordinamos tu prueba de ruta en Tunja? (WhatsApp 3151212223). Ficha: %s",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.OfficialURL)
 	case triage.IntentMileage:
-		return fmt.Sprintf("¡Hola! Con todo gusto:\n\n- %s %s modelo %d\n- Kilometraje: %d km verificados\n- Precio: $%d COP\n\n¿Te gustaría agendar prueba de ruta en Tunja? Escríbenos o déjanos tu WhatsApp (Línea oficial: 3151212223). Ficha: %s",
-			v.Brand, v.Model, v.Year, v.MileageKm, v.PriceCOP, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Con todo gusto:\n\n- %s modelo %d\n- Kilometraje: %d km verificados\n- Precio: $%d COP\n\n¿Te gustaría agendar prueba de ruta en Tunja? Escríbenos o déjanos tu WhatsApp (Línea oficial: 3151212223). Ficha: %s",
+			title, v.Year, v.MileageKm, v.PriceCOP, v.OfficialURL)
 	case triage.IntentDocs:
-		return fmt.Sprintf("¡Claro que sí! Datos del vehículo:\n\n- %s %s modelo %d (placa terminada en %s)\n- SOAT y tecnomecánica al día\n- Precio: $%d COP\n\n¿A qué WhatsApp te enviamos peritaje y documentos? (WhatsApp 3151212223). Ficha: %s",
-			v.Brand, v.Model, v.Year, v.PlateLastChar, v.PriceCOP, v.OfficialURL)
+		return fmt.Sprintf("¡Claro que sí! Datos del vehículo:\n\n- %s modelo %d (placa terminada en %s)\n- SOAT y tecnomecánica al día\n- Precio: $%d COP\n\n¿A qué WhatsApp te enviamos peritaje y documentos? (WhatsApp 3151212223). Ficha: %s",
+			title, v.Year, v.PlateLastChar, v.PriceCOP, v.OfficialURL)
 	case triage.IntentVisit:
-		return fmt.Sprintf("¡Te esperamos con gusto en Tunja para prueba de ruta!\n\n- %s %s modelo %d ($%d COP, %d km)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\n¿A qué WhatsApp te agendamos tu cita? (Línea oficial: 3151212223). Ficha: %s",
-			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
+		return fmt.Sprintf("¡Te esperamos con gusto en Tunja para prueba de ruta!\n\n- %s modelo %d ($%d COP, %d km)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\n¿A qué WhatsApp te agendamos tu cita? (Línea oficial: 3151212223). Ficha: %s",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
 	default:
-		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s %s modelo %d\n- Precio: $%d COP (%d km)\n- Transmisión: %s | Motor: %s | Tracción: %s | Color: %s\n\n¿A qué WhatsApp te compartimos más fotos? (Línea oficial: 3151212223). Ficha: %s",
-			v.Brand, v.Model, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s modelo %d\n- Precio: $%d COP (%d km)\n- Transmisión: %s | Motor: %s | Tracción: %s | Color: %s\n\n¿A qué WhatsApp te compartimos más fotos? (Línea oficial: 3151212223). Ficha: %s",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)
 	}
 }

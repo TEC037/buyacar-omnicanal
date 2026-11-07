@@ -137,7 +137,11 @@ func (e *Engine) ShouldProcessThread(ctx context.Context, th channel.Thread, now
 		return "", ErrOlderThan9Weeks
 	}
 
-	hash := e.store.ComputeHash(th.Conversation.ChannelID, th.Conversation.ID, lastMsg.Text)
+	hashInput := lastMsg.Text
+	if len(th.Messages) > 1 && lastMsg.ID != "" {
+		hashInput = lastMsg.ID + ":" + lastMsg.Text
+	}
+	hash := e.store.ComputeHash(th.Conversation.ChannelID, th.Conversation.ID, hashInput)
 	if processed, _ := e.store.HasProcessed(hash); processed {
 		return hash, ErrAlreadyProcessed
 	}

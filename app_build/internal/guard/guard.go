@@ -38,6 +38,7 @@ var MarketplaceNoise = []string{
 var ChannelCharLimits = map[string]int{
 	"tiktok":               400,
 	"instagram":            450,
+	"messenger":            500,
 	"facebook_marketplace": 500,
 	"whatsapp":             650,
 	"email":                2000,

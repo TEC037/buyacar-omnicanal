@@ -384,6 +384,11 @@ func (a *MetaOmnichannelAdapter) HandleWebhook(rw http.ResponseWriter, r *http.R
 						AdTitle string `json:"ad_title"`
 						Ref     string `json:"ref"`
 					} `json:"referral"`
+					Postback struct {
+						MID     string `json:"mid"`
+						Title   string `json:"title"`
+						Payload string `json:"payload"`
+					} `json:"postback"`
 					Delivery struct {
 						MIDs []string `json:"mids"`
 					} `json:"delivery"`
@@ -422,20 +427,33 @@ func (a *MetaOmnichannelAdapter) HandleWebhook(rw http.ResponseWriter, r *http.R
 				isDelivery := len(m.Delivery.MIDs) > 0
 				isRead := m.Read.Watermark > 0
 
-				msgText := m.Message.Text
+				mid := m.Message.MID
+				msgText := strings.TrimSpace(m.Message.Text)
+				if msgText == "" {
+					if strings.TrimSpace(m.Postback.Title) != "" {
+						msgText = strings.TrimSpace(m.Postback.Title)
+					} else if strings.TrimSpace(m.Postback.Payload) != "" {
+						msgText = strings.TrimSpace(m.Postback.Payload)
+					}
+					if mid == "" {
+						mid = m.Postback.MID
+					}
+				}
 				adTitle := strings.TrimSpace(m.Message.Referral.AdTitle)
 				if adTitle == "" {
 					adTitle = strings.TrimSpace(m.Referral.AdTitle)
 				}
 				if adTitle != "" && msgText != "" {
 					msgText = fmt.Sprintf("[Anuncio Marketplace: %s] %s", adTitle, msgText)
+				} else if adTitle != "" && msgText == "" {
+					msgText = fmt.Sprintf("[Anuncio Marketplace: %s] ¿Sigue disponible?", adTitle)
 				}
 
 				triageRes := a.TriageInboundEvent(
 					platform,
 					m.Sender.ID,
 					m.Recipient.ID,
-					m.Message.MID,
+					mid,
 					msgText,
 					m.Message.IsEcho,
 					isDelivery,
@@ -583,7 +601,7 @@ func (s *MetaSubChannel) Reply(ctx context.Context, session Session, conversatio
 	}
 
 	limits := s.Limits()
-	if len(message.Text) > limits.MaxCharacterLength {
+	if len([]rune(message.Text)) > limits.MaxCharacterLength {
 		return SendResult{Status: SendFailed}, ErrCharacterLimitExceeded
 	}
 

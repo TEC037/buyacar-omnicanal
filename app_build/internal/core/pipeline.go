@@ -222,7 +222,9 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, ch channel.Channel, 
 	var priorTexts []string
 	if p.Strategy != "A1_fast_only" && len(th.Messages) > 1 {
 		for _, m := range th.Messages[:len(th.Messages)-1] {
-			priorTexts = append(priorTexts, m.Text)
+			if m.Sender != "own" {
+				priorTexts = append(priorTexts, m.Text)
+			}
 		}
 	}
 

@@ -290,7 +290,7 @@ func TestMultiTurn_ConversationalCoherence_WithoutIntentPollution(t *testing.T) 
 		wantContains string
 	}{
 		{"buen día", triage.IntentGreeting, "Vehículos certificados"},
-		{"busco una mazda 3", triage.IntentAvailability, "Mazda3 modelo 2021"},
+		{"busco una mazda 3", triage.IntentAvailability, "Mazda 3 modelo 2021"},
 		{"¿qué precio tiene?", triage.IntentPrice, "Precio: $80000000 COP"},
 		{"¿y cuántos kilómetros tiene?", triage.IntentMileage, "Kilometraje: 39000 km verificados"},
 		{"¿tiene SOAT y papeles al día?", triage.IntentDocs, "SOAT y tecnomecánica al día"},

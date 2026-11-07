@@ -142,7 +142,7 @@ func (f *FastPathTierProvider) GenerateJSON(ctx context.Context, compact skills.
 		out := StructuredOutput{
 			ConfigID:            "cfg-fast-l3",
 			Trace:               TraceInfo{TimestampUTC: nowUTC, RequestID: reqID},
-			ProposedReply:       "Nuestras líneas oficiales de BuyaCAR son: WhatsApp exclusivo 3151212223 y teléfonos 3022866969 / 3160502717. ¡Confianza sobre ruedas!",
+			ProposedReply:       "¡Claro que sí! Nuestras líneas oficiales de BuyaCAR en Tunja son:\n\n- WhatsApp Comercial: 3151212223\n- Atención Vitrina: 3022866969 / 3160502717\n- Catálogo: https://buyacar.com.co",
 			Intent:              string(compact.Intent),
 			Confidence:          1.0,
 			ConversationSummary: "Consulta resuelta por Fast-Path Nivel 3 (Contacto).",
@@ -156,7 +156,7 @@ func (f *FastPathTierProvider) GenerateJSON(ctx context.Context, compact skills.
 		out := StructuredOutput{
 			ConfigID:            "cfg-fast-l3",
 			Trace:               TraceInfo{TimestampUTC: nowUTC, RequestID: reqID},
-			ProposedReply:       "¡Hola! Bienvenido a BuyaCAR en Tunja, confianza sobre ruedas. Contamos con vehículos certificados, manejamos todos los bancos y recibimos tu vehículo como parte de pago (permuta). ¿En qué te podemos asesorar hoy?",
+			ProposedReply:       "¡Hola! Qué gusto saludarte.\nBienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\nPuedes consultar nuestro inventario actualizado con precios y fotos en https://buyacar.com.co\n\n¿Te llamó la atención algún modelo en particular para coordinar tu prueba de ruta?",
 			Intent:              string(compact.Intent),
 			Confidence:          1.0,
 			ConversationSummary: "Consulta resuelta por Fast-Path Nivel 3 (Saludo).",
