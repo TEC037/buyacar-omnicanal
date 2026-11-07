@@ -605,6 +605,25 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		if os.Getenv("RAILWAY_ENVIRONMENT") != "" || os.Getenv("HOST") != "" || os.Getenv("PORT") != "" {
 			host = "0.0.0.0"
 		}
+
+		// En modo servidor permanente (Railway/Cloud), mantener fresca la cache de inventario periódicamente
+		go func() {
+			ticker := time.NewTicker(10 * time.Minute)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case t := <-ticker.C:
+					if fetcher != nil && os.Getenv("BUYACAR_LIVE_INVENTORY_SYNC") == "1" {
+						_, _ = fetcher.Sync(ctx, invCache, t.UTC())
+					} else if invCache != nil {
+						invCache.TouchRefresh(t.UTC())
+					}
+				}
+			}
+		}()
+
 		srvCfg := server.Config{
 			Port:            *portFlag,
 			Host:            host,
