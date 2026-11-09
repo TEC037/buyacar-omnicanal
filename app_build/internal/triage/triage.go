@@ -492,7 +492,7 @@ func Classify(raw string) Classification {
 		}
 	}
 
-	// 1.5 Detección de Petición Ilícita / Adulteración de Odómetro
+	// 1.5 Detección de Petición Ilícita / Adulteración de Odómetro, Gemeleo o Lavado de Activos
 	if containsAny(norm, "bajar el kilometraje", "bajar kilometraje", "bajan el kilometraje", "bajarle el kilometraje", "bajarle kilometros", "bajar kilometros", "modificar odometro", "alterar odometro", "modificar el odometro", "alterar el odometro", "modificar kilometraje", "adulterar odometro", "bajarle al tablero") {
 		return Classification{
 			NormalizedText:   norm,
@@ -502,6 +502,32 @@ func Classify(raw string) Classification {
 			IsEasy:           false,
 			MustEscalate:     true,
 			EscalationReason: "fraud_or_odometer_tampering_request",
+			ExtractedQuery:   q,
+		}
+	}
+
+	if containsAny(norm, "gemeleo", "gemelear", "clonar placa", "poner la placa de", "ponerle la placa", "cambiar la placa de su", "rodar con la placa") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentLegalOrClaim,
+			Intents:          []Intent{IntentLegalOrClaim},
+			Confidence:       0.99,
+			IsEasy:           false,
+			MustEscalate:     true,
+			EscalationReason: "fraud_or_plate_cloning_request",
+			ExtractedQuery:   q,
+		}
+	}
+
+	if containsAny(norm, "sin declarar", "sin registrar ante la dian", "sin registrar en la dian", "uiaf", "caleta", "plata en caleta", "dinero no declarado", "lavado") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentLegalOrClaim,
+			Intents:          []Intent{IntentLegalOrClaim},
+			Confidence:       0.99,
+			IsEasy:           false,
+			MustEscalate:     true,
+			EscalationReason: "compliance_aml_sarlaft_alert",
 			ExtractedQuery:   q,
 		}
 	}

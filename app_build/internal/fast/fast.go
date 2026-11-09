@@ -307,6 +307,12 @@ func BuildEscalationHandoffReply(ctx context.Context, reason string, cl triage.C
 	case "fraud_or_odometer_tampering_request":
 		return "¡Hola! En BuyaCAR en Tunja garantizamos total transparencia y legalidad: el kilometraje de todos nuestros vehículos es original, verificado y certificado mediante peritaje de 150 puntos. No realizamos ni aceptamos alteraciones de odómetros.\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para revisar el historial verificado del vehículo.", nil
 
+	case "fraud_or_plate_cloning_request":
+		return "¡Hola! En BuyaCAR en Tunja cumplimos estrictamente la normativa de tránsito y el Código Penal colombiano. Todos nuestros vehículos cuentan con identificación y placas originales verificadas ante el RUNT. No prestamos ni alteramos placas vehiculares.\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.", nil
+
+	case "compliance_aml_sarlaft_alert":
+		return "¡Hola! En BuyaCAR SAS BIC aplicamos estricto cumplimiento del sistema SAGRILAFT y normatividad DIAN / UIAF: toda transacción vehicular exige origen legal de fondos, identificación del comprador y facturación electrónica oficial en vitrina.\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.", nil
+
 	case "bank_account_tampering_or_impersonation":
 		return DefaultBusinessTexts().PaymentsReply, nil
 
