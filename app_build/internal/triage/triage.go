@@ -429,6 +429,61 @@ func Classify(raw string) Classification {
 		}
 	}
 
+	// 1.0 Detección de selección numérica aislada de menús o fallbacks previos
+	trimmedNorm := strings.TrimSpace(norm)
+	if trimmedNorm == "1" || trimmedNorm == "opcion 1" || trimmedNorm == "uno" {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentCategoryQuery,
+			Intents:        []Intent{IntentCategoryQuery},
+			Confidence:     0.95,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+	if trimmedNorm == "2" || trimmedNorm == "opcion 2" || trimmedNorm == "dos" {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentCreditGeneral,
+			Intents:        []Intent{IntentCreditGeneral},
+			Confidence:     0.95,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+	if trimmedNorm == "3" || trimmedNorm == "opcion 3" || trimmedNorm == "tres" {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentTradeIn,
+			Intents:          []Intent{IntentTradeIn},
+			Confidence:       0.95,
+			IsEasy:           false,
+			MustEscalate:     true,
+			EscalationReason: "trade_in_appraisal_required",
+			ExtractedQuery:   q,
+		}
+	}
+	if trimmedNorm == "4" || trimmedNorm == "opcion 4" || trimmedNorm == "cuatro" {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentAfterSales,
+			Intents:        []Intent{IntentAfterSales},
+			Confidence:     0.95,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+	if trimmedNorm == "5" || trimmedNorm == "opcion 5" || trimmedNorm == "cinco" {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentContact,
+			Intents:        []Intent{IntentContact},
+			Confidence:     0.95,
+			IsEasy:         true,
+			ExtractedQuery: q,
+		}
+	}
+
 	// 1.1 Detección de solicitud de PII de terceros o requerimientos de autoridades
 	if containsAny(norm, "cedula del dueno", "cedula del propietario", "quien era el dueno", "datos del dueno", "telefono del dueno", "nombre del dueno", "quien lo vendio", "fiscalia", "oficio urgente", "investigacion penal", "policia judicial", "juzgado", "requerimiento legal") {
 		return Classification{
