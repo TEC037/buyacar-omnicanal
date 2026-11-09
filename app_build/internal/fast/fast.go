@@ -304,6 +304,12 @@ func BuildEscalationHandoffReply(ctx context.Context, reason string, cl triage.C
 	case "prompt_injection_detected":
 		return "", nil
 
+	case "fraud_or_odometer_tampering_request":
+		return "¡Hola! En BuyaCAR en Tunja garantizamos total transparencia y legalidad: el kilometraje de todos nuestros vehículos es original, verificado y certificado mediante peritaje de 150 puntos. No realizamos ni aceptamos alteraciones de odómetros.\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para revisar el historial verificado del vehículo.", nil
+
+	case "bank_account_tampering_or_impersonation":
+		return DefaultBusinessTexts().PaymentsReply, nil
+
 	case "sensitive_pii_other_requested":
 		return DefaultBusinessTexts().PIIOtherReply, nil
 
@@ -382,7 +388,7 @@ func BuildEscalationHandoffReply(ctx context.Context, reason string, cl triage.C
 		return "¡Hola! Hemos asignado tu consulta a nuestro especialista de financiación en BuyaCAR en Tunja para revisar tu caso con nuestros bancos aliados.\n\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a la Toyota)\n- WhatsApp directo: 315 121 2223\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.", nil
 
 	case "legal_claim_or_fasecolda":
-		return "¡Hola! Todos los vehículos de BuyaCAR en Tunja cuentan con peritaje de 150 puntos e historial verificado.\n\nHemos escalado tu consulta a un asesor especializado. Te invitamos a comunicarte por WhatsApp al 315 121 2223.", nil
+		return "¡Hola! En BuyaCAR en Tunja atendemos cualquier reclamación con máxima seriedad y respaldo legal. Todos nuestros vehículos cuentan con peritaje de 150 puntos y tradición jurídica verificada.\n\nHemos asignado de inmediato tu caso a la gerencia y asesoría legal. Te invitamos a comunicarte por WhatsApp al 315 121 2223.", nil
 	}
 
 	return "¡Hola! Bienvenido a BuyaCAR en Tunja · Vehículos certificados.\n\nUn asesor comercial te atenderá en breve. Te invitamos a comunicarte por WhatsApp al 315 121 2223.", nil

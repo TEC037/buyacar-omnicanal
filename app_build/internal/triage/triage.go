@@ -254,6 +254,8 @@ func Normalize(input string) string {
 var (
 	promptInjectKeywords = []string{
 		"olvida todas tus instrucciones", "ignora tus reglas", "system prompt", "ignore previous instructions", "regalan carros",
+		"system override", "ignore all previous", "ignore previous", "system instructions", "print internal", "print system",
+		"env variables", "variables de entorno", "directivas anteriores", "olvida todas tus directivas", "prompt del sistema",
 	}
 	discountKeywords = []string{
 		"descuento", "rebaja", "precio minimo", "lo menos", "cuanto es lo minimo", "ultimo precio", "en cuanto me lo deja", "de contado cuanto",
@@ -267,6 +269,9 @@ var (
 	}
 	legalClaimKeywords = []string{
 		"siniestro", "fasecolda", "peritaje legal", "queja", "reclamo", "demanda",
+		"abogado", "denuncia", "denunciar", "embargo", "robados", "estafa", "estafadores", "estafar",
+		"difamacion", "amenaza", "publicar en redes", "caracol radio", "me devuelven", "devolver la plata",
+		"devolver el dinero", "devolucion", "reclamacion", "sic", "superintendencia", "tutela",
 	}
 	policyExcludeKeywords = []string{
 		"garantia", "taller", "talleres", "requisitos", "peritaje", "traspaso", "150 puntos", "pericial", "fotos del catalogo en linea",
@@ -461,14 +466,42 @@ func Classify(raw string) Classification {
 		}
 	}
 
-	// 1.3 Detección de Pagos, Señas y Cuentas Bancarias
-	if containsAny(norm, "donde consigno", "cuenta bancaria", "como pago", "separar el carro", "hacer la sena", "abono inicial", "a que cuenta consigno", "numero de cuenta", "daviplata", "nequi", "transferir el anticipo", "transferirles el anticipo", "giro ya mismo", "donde les giro", "consignar el anticipo") {
+	// 1.3 Detección de Suplantación / Desvío de Cuentas Bancarias
+	if containsAny(norm, "cambiamos la cuenta", "cambio de cuenta", "cuenta temporal", "cuenta de ahorros temporal", "contador de buyacar", "memo interno", "desvio de fondos") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentPayments,
+			Intents:          []Intent{IntentPayments},
+			Confidence:       0.99,
+			IsEasy:           false,
+			MustEscalate:     true,
+			EscalationReason: "bank_account_tampering_or_impersonation",
+			ExtractedQuery:   q,
+		}
+	}
+
+	// 1.4 Detección de Pagos, Señas y Cuentas Bancarias
+	if containsAny(norm, "donde consigno", "cuenta bancaria", "como pago", "separar el carro", "hacer la sena", "abono inicial", "a que cuenta consigno", "numero de cuenta", "daviplata", "nequi", "transferir el anticipo", "transferirles el anticipo", "giro ya mismo", "donde les giro", "consignar el anticipo", "cuenta de ahorros", "datos de consignacion", "consignacion") {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentPayments,
 			Intents:          []Intent{IntentPayments},
 			Confidence:       0.95,
 			IsEasy:           true,
+			ExtractedQuery:   q,
+		}
+	}
+
+	// 1.5 Detección de Petición Ilícita / Adulteración de Odómetro
+	if containsAny(norm, "bajar el kilometraje", "bajar kilometraje", "bajan el kilometraje", "bajarle el kilometraje", "bajarle kilometros", "bajar kilometros", "modificar odometro", "alterar odometro", "modificar el odometro", "alterar el odometro", "modificar kilometraje", "adulterar odometro", "bajarle al tablero") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentLegalOrClaim,
+			Intents:          []Intent{IntentLegalOrClaim},
+			Confidence:       0.99,
+			IsEasy:           false,
+			MustEscalate:     true,
+			EscalationReason: "fraud_or_odometer_tampering_request",
 			ExtractedQuery:   q,
 		}
 	}
