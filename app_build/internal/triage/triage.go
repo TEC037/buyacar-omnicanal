@@ -235,7 +235,7 @@ func Normalize(input string) string {
 	}
 
 	res := strings.Join(fields, " ")
-	if containsAny(res, "mazda", "cx", "trail", "cr", "santa", "200", "180", "audi", "sandero", "i25", "bt", "max", "cross", "rav", "vitara") {
+	if containsAny(res, "mazda", "cx", "trail", "cr v", "crv", "santa", "200", "180", "audi", "sandero", "i25", "bt 50", "bt50", "d max", "dmax", "t cross", "tcross", "rav 4", "grand vitara") {
 		res = strings.TrimSpace(compoundModelReplacer.Replace(" " + res + " "))
 	}
 	return res
@@ -615,9 +615,16 @@ func ClassifyWithContext(raw string, priorTexts []string) Classification {
 		return cl
 	}
 
+	isPurePolicyFollowUp := containsAny(cl.NormalizedText, policyExcludeKeywords...) &&
+		!containsAny(cl.NormalizedText, "sigue disponible", "esta disponible", "precio", "cuanto vale", "cuanto cuesta", "valor", "kilometraje", "kilometros")
+
 	for i := len(priorTexts) - 1; i >= 0; i-- {
 		pq := extractVehicleQuery(Normalize(priorTexts[i]))
 		if pq.Brand != "" || pq.Model != "" {
+			if isPurePolicyFollowUp {
+				cl.ExtractedQuery = pq
+				return cl
+			}
 			vehPrefix := strings.TrimSpace(pq.Brand + " " + pq.Model)
 			if pq.Year > 0 {
 				vehPrefix = vehPrefix + " " + strconv.Itoa(pq.Year)
