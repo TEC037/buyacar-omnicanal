@@ -344,22 +344,22 @@ func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {
 	title := formatVehicleTitle(v)
 	switch intent {
 	case triage.IntentPrice:
-		return fmt.Sprintf("¡Hola! Con mucho gusto:\n\n- %s modelo %d\n- Precio: $%d COP\n- Kilometraje: %d km (%s)\n\nRecibimos tu usado en permuta y financiamos. Te invitamos a comunicarte por WhatsApp al 315 121 2223. Ficha: %s",
-			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Con mucho gusto:\n\n- %s modelo %d\n- Precio: $%d COP\n- Kilometraje: %d km (%s)\n\nRecibimos tu usado en permuta y financiamos.\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission)
 	case triage.IntentMileage:
-		return fmt.Sprintf("¡Hola! Con todo gusto:\n\n- %s modelo %d\n- Kilometraje: %d km verificados\n- Precio: $%d COP\n\n¿Te gustaría agendar prueba de ruta en Tunja? Te invitamos a comunicarte por WhatsApp al 315 121 2223. Ficha: %s",
-			title, v.Year, v.MileageKm, v.PriceCOP, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Con todo gusto:\n\n- %s modelo %d\n- Kilometraje: %d km verificados\n- Precio: $%d COP\n\n¿Te gustaría agendar prueba de ruta en Tunja?\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
+			title, v.Year, v.MileageKm, v.PriceCOP)
 	case triage.IntentDocs:
-		return fmt.Sprintf("¡Claro que sí! Datos del vehículo:\n\n- %s modelo %d (placa terminada en %s)\n- SOAT y tecnomecánica al día\n- Precio: $%d COP\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para enviarte documentos. Ficha: %s",
-			title, v.Year, v.PlateLastChar, v.PriceCOP, v.OfficialURL)
+		return fmt.Sprintf("¡Claro que sí! Datos del vehículo:\n\n- %s modelo %d (placa terminada en %s)\n- SOAT y tecnomecánica al día\n- Precio: $%d COP\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para enviarte documentos.",
+			title, v.Year, v.PlateLastChar, v.PriceCOP)
 	case triage.IntentVisit:
-		return fmt.Sprintf("¡Te esperamos con gusto en Tunja para prueba de ruta!\n\n- %s modelo %d ($%d COP, %d km)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para agendar tu cita. Ficha: %s",
-			title, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
+		return fmt.Sprintf("¡Te esperamos con gusto en Tunja para prueba de ruta!\n\n- %s modelo %d ($%d COP, %d km)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para agendar tu cita.",
+			title, v.Year, v.PriceCOP, v.MileageKm)
 	case triage.IntentContact:
-		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s modelo %d: $%d COP (%d km, %s %s)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\nTe invitamos a comunicarte por WhatsApp o llamarnos al 315 121 2223. Ficha: %s",
-			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Traction, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s modelo %d: $%d COP (%d km, %s %s)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\nTe invitamos a comunicarte por WhatsApp o llamarnos al 315 121 2223.",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Traction)
 	default:
-		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s modelo %d\n- Precio: $%d COP (%d km)\n- Transmisión: %s | Motor: %s | Tracción: %s | Color: %s\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223. Ficha: %s",
-			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)
+		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s modelo %d\n- Precio: $%d COP (%d km)\n- Transmisión: %s | Motor: %s | Tracción: %s | Color: %s\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color)
 	}
 }
