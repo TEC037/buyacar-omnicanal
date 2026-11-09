@@ -427,7 +427,7 @@ func Classify(raw string) Classification {
 	}
 
 	if containsAny(norm, tradeInSpecificKeywords...) ||
-		(containsAny(norm, "permuta", "retoma", "parte de pago") && (q.Brand != "" || q.Model != "")) {
+		containsAny(norm, "retoma", "retoman", "reciben usado", "parte de pago", "permuta", "permutas") {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentTradeIn,

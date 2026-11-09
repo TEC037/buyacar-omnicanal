@@ -747,6 +747,8 @@ func SynthesizeFromRAGChunk(chunk rag.Chunk) string {
 		return "Requisitos de financiación para independientes en BuyaCAR en Tunja:\n\n- Cédula, RUT/Cámara de Comercio, declaración de renta y extractos (6 meses)\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "condiciones financieras") || strings.Contains(titleLower, "bancos aliados") || strings.Contains(titleLower, "política de financiac") || strings.Contains(titleLower, "politica de financiac"):
 		return "En BuyaCAR en Tunja financiamos hasta el 90% del vehículo:\n\n- Bancos aliados: Bancolombia (Sufi), Davivienda, Banco de Bogotá y Finandina\n- Plazos hasta 72 meses (simulación indicativa sujeta a estudio)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
+	case strings.Contains(titleLower, "retoma") || strings.Contains(titleLower, "parte de pago") || strings.Contains(titleLower, "permuta"):
+		return "¡Claro que sí! En BuyaCAR en Tunja recibimos tu vehículo usado en parte de pago o lo compramos de contado:\n\n- Peritaje técnico en nuestra vitrina (Av. Oriental - Cra. 6 #52-23, frente a la Toyota)\n- Retoma multimarca con avalúo transparente e inmediato\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para coordinar el avalúo."
 	case strings.Contains(titleLower, "peritaje"):
 		return "En BuyaCAR en Tunja todos los vehículos cuentan con peritaje técnico certificado:\n\n- Inspección de 150 puntos (estructura, chasis, motor, caja y antecedentes legales)\n- Garantía de cero siniestros estructurales y tradición 100% asegurable\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "traspaso"):
