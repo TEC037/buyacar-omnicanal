@@ -89,10 +89,12 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 			InventoryStatus: inventory.StatusVehicleNotRequired,
 		}
 	case triage.IntentContact:
-		return Result{
-			Handled:         true,
-			Reply:           e.texts.ContactReply,
-			InventoryStatus: inventory.StatusVehicleNotRequired,
+		if cl.ExtractedQuery.Brand == "" && cl.ExtractedQuery.Model == "" {
+			return Result{
+				Handled:         true,
+				Reply:           e.texts.ContactReply,
+				InventoryStatus: inventory.StatusVehicleNotRequired,
+			}
 		}
 	case triage.IntentGreeting:
 		if triage.IsCourtesyOnly(cl.NormalizedText) {
@@ -353,6 +355,9 @@ func formatVehicleReply(intent triage.Intent, v inventory.Vehicle) string {
 	case triage.IntentVisit:
 		return fmt.Sprintf("¡Te esperamos con gusto en Tunja para prueba de ruta!\n\n- %s modelo %d ($%d COP, %d km)\n- Vitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota)\n\n¿A qué WhatsApp te agendamos tu cita? (Línea oficial: 3151212223). Ficha: %s",
 			title, v.Year, v.PriceCOP, v.MileageKm, v.OfficialURL)
+	case triage.IntentContact:
+		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja y claro que puedes llamarnos:\n\n- %s modelo %d: $%d COP (%d km, %s %s)\n- WhatsApp y llamadas: 3151212223\n- Líneas vitrina: 3022866969 / 3160502717\n\nVitrina: Av. Oriental - Cra. 6 #52-23 (frente a Toyota). Ficha: %s",
+			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Traction, v.OfficialURL)
 	default:
 		return fmt.Sprintf("¡Hola! Sí señor(a), unidad disponible en Tunja:\n\n- %s modelo %d\n- Precio: $%d COP (%d km)\n- Transmisión: %s | Motor: %s | Tracción: %s | Color: %s\n\n¿A qué WhatsApp te compartimos más fotos? (Línea oficial: 3151212223). Ficha: %s",
 			title, v.Year, v.PriceCOP, v.MileageKm, v.Transmission, v.Engine, v.Traction, v.Color, v.OfficialURL)

@@ -392,4 +392,19 @@ func TestKaizenPerfection_ColombianMarketAndEscalationHandoffs(t *testing.T) {
 	if replyInject != "" {
 		t.Fatalf("expected empty handoff on prompt injection, got %q", replyInject)
 	}
+
+	// 5. Casos reales de Marketplace: Oswaldo (Honda CR-V 2008 + solicitud de teléfono) y Jhonatan Jesid (Ford Edge 2016 con texto de grupo Facebook "Se unió a Facebook en 2021")
+	oswaldoRaw := "Oswaldo · 2008 Honda CR-V EX 4×4 Automática 2.4\nOswaldo ha iniciado este chat.\nHola. ¿Está disponible?\nBuenas tardes me regalas un número telefónico para llamarte"
+	clOswaldo := triage.Classify(oswaldoRaw)
+	resOswaldo := eng.Evaluate(ctx, clOswaldo, cache, now)
+	if !resOswaldo.Handled || !strings.Contains(resOswaldo.Reply, "Honda CR-V modelo 2008") || !strings.Contains(resOswaldo.Reply, "43000000") || !strings.Contains(resOswaldo.Reply, "3022866969") {
+		t.Fatalf("Oswaldo case failed: Handled=%v, Reply=%q (query=%+v)", resOswaldo.Handled, resOswaldo.Reply, clOswaldo.ExtractedQuery)
+	}
+
+	jhonatanRaw := "Jhonatan Jesid · 2016 Ford edge titanium 4x4\nJhonatan Jesid Bautista Buitrago ha creado este grupo\nNo estás conectado con 1 miembro\nJhonatan Jesid ha asignado al grupo el nombre Jhonatan Jesid · 2016 Ford edge titanium 4x4.\nJhonatan Jesid ha cambiado la foto del grupo.\nJhonatan Jesid\nJhonatan Jesid Bautista Buitrago\nSe unió a Facebook en 2021\nTambién es miembro de Venta de Carros en Bogotá\nHola. ¿Sigue estando disponible?"
+	clJhonatan := triage.Classify(jhonatanRaw)
+	resJhonatan := eng.Evaluate(ctx, clJhonatan, cache, now)
+	if !resJhonatan.Handled || !strings.Contains(resJhonatan.Reply, "Ford Edge modelo 2016") || !strings.Contains(resJhonatan.Reply, "65000000") {
+		t.Fatalf("Jhonatan case failed: Handled=%v, Reply=%q (query=%+v)", resJhonatan.Handled, resJhonatan.Reply, clJhonatan.ExtractedQuery)
+	}
 }

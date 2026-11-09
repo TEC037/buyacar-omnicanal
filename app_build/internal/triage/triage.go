@@ -48,7 +48,7 @@ type Classification struct {
 
 var normReplacer = strings.NewReplacer(
 	"á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u", "ü", "u", "ñ", "n",
-	"\ufffd", " ",
+	"×", "x", "·", " ", "\ufffd", " ",
 	"¿", " ", "?", " ", "¡", " ", "!", " ", ",", " ", ".", " ",
 	"[", " ", "]", " ", "(", " ", ")", " ", ":", " ", ";", " ",
 	"{", " ", "}", " ", "\"", " ", "'", " ", "*", " ", "/", " ",
@@ -284,7 +284,8 @@ var (
 		"horario", "que hora abren", "a que hora cierran", "sabado", "domingo", "atencion", "abiertos",
 	}
 	contactKeywords = []string{
-		"whatsapp", "telefono", "numero de contacto", "celular", "llamar", "a que numero",
+		"whatsapp", "telefono", "telefonico", "numero de contacto", "numero para llamarte",
+		"regalas un numero", "me das un numero", "celular", "llamar", "llamarte", "a que numero",
 	}
 	visitGeneralKeywords = []string{
 		"agendar cita", "agendar una cita", "apartar cita", "prueba de ruta", "test drive",
@@ -551,19 +552,28 @@ func Classify(raw string) Classification {
 				ExtractedQuery: q,
 			}
 		}
-		if containsAny(norm, "transmision", "caja", "motor", "traccion", "4x4", "color", "cilindraje", "combustible", "ficha tecnica", "caracteristicas", "automatico", "automatica", "mecanico", "mecanica", "gasolina", "diesel", "version", "cojineria", "equipamiento") {
+		if hasCustomerMobile(norm) || containsAny(norm, visitGeneralKeywords...) {
 			return Classification{
 				NormalizedText: norm,
-				Intent:         IntentSpecs,
+				Intent:         IntentVisit,
 				Confidence:     0.90,
 				IsEasy:         true,
 				ExtractedQuery: q,
 			}
 		}
-		if hasCustomerMobile(norm) || containsAny(norm, visitGeneralKeywords...) {
+		if containsAny(norm, contactKeywords...) {
 			return Classification{
 				NormalizedText: norm,
-				Intent:         IntentVisit,
+				Intent:         IntentContact,
+				Confidence:     0.92,
+				IsEasy:         true,
+				ExtractedQuery: q,
+			}
+		}
+		if containsAny(norm, "transmision", "caja", "motor", "traccion", "4x4", "color", "cilindraje", "combustible", "ficha tecnica", "caracteristicas", "automatico", "automatica", "mecanico", "mecanica", "gasolina", "diesel", "version", "cojineria", "equipamiento") {
+			return Classification{
+				NormalizedText: norm,
+				Intent:         IntentSpecs,
 				Confidence:     0.90,
 				IsEasy:         true,
 				ExtractedQuery: q,
@@ -608,7 +618,7 @@ func ClassifyWithContext(raw string, priorTexts []string) Classification {
 	if cl.MustEscalate || cl.ExtractedQuery.Brand != "" || cl.ExtractedQuery.Model != "" || len(priorTexts) == 0 {
 		return cl
 	}
-	if cl.Intent == IntentLocation || cl.Intent == IntentHours || cl.Intent == IntentContact || cl.Intent == IntentCreditGeneral {
+	if cl.Intent == IntentLocation || cl.Intent == IntentHours || cl.Intent == IntentCreditGeneral {
 		return cl
 	}
 	if cl.Intent == IntentGreeting && IsCourtesyOnly(cl.NormalizedText) {
@@ -879,7 +889,7 @@ func extractVehicleQuery(norm string) inventory.Query {
 	var q inventory.Query
 
 	tokens := strings.Fields(norm)
-	for _, tok := range tokens {
+	for i, tok := range tokens {
 		if b, ok := knownBrands[tok]; ok {
 			q.Brand = b
 		}
@@ -888,7 +898,12 @@ func extractVehicleQuery(norm string) inventory.Query {
 		}
 		if len(tok) == 4 {
 			if yr, err := strconv.Atoi(tok); err == nil && yr >= 2000 && yr <= 2030 {
-				q.Year = yr
+				if i >= 2 && tokens[i-1] == "en" && tokens[i-2] == "facebook" {
+					continue
+				}
+				if q.Year == 0 {
+					q.Year = yr
+				}
 			}
 		}
 	}
