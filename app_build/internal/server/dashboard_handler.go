@@ -335,6 +335,14 @@ func (dh *DashboardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		dh.handleCRMDecision(w, r)
 	case path == "/api/crm/login":
 		dh.handleCRMLogin(w, r)
+	case path == "/politica-privacidad" || path == "/politica-de-privacidad" || path == "/privacy" || path == "/privacy-policy" || path == "/privacidad":
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		if content, err := assetsFS.ReadFile("assets/privacidad.html"); err == nil {
+			_, _ = w.Write(content)
+			return
+		}
+		http.NotFound(w, r)
 	default:
 		// Intentar servir desde embed.FS
 		trimmed := strings.TrimPrefix(path, "/")
