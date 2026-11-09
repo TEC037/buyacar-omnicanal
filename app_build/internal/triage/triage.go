@@ -424,8 +424,8 @@ func Classify(raw string) Classification {
 		}
 	}
 
-	// 1.1 Detección de solicitud de PII de terceros (Dueño anterior, cédula, peritaje privado)
-	if containsAny(norm, "cedula del dueno", "cedula del propietario", "quien era el dueno", "datos del dueno", "telefono del dueno", "nombre del dueno", "quien lo vendio") {
+	// 1.1 Detección de solicitud de PII de terceros o requerimientos de autoridades
+	if containsAny(norm, "cedula del dueno", "cedula del propietario", "quien era el dueno", "datos del dueno", "telefono del dueno", "nombre del dueno", "quien lo vendio", "fiscalia", "oficio urgente", "investigacion penal", "policia judicial", "juzgado", "requerimiento legal") {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentSensitivePII,
@@ -462,7 +462,7 @@ func Classify(raw string) Classification {
 	}
 
 	// 1.3 Detección de Pagos, Señas y Cuentas Bancarias
-	if containsAny(norm, "donde consigno", "cuenta bancaria", "como pago", "separar el carro", "hacer la sena", "abono inicial", "a que cuenta consigno", "numero de cuenta") {
+	if containsAny(norm, "donde consigno", "cuenta bancaria", "como pago", "separar el carro", "hacer la sena", "abono inicial", "a que cuenta consigno", "numero de cuenta", "daviplata", "nequi", "transferir el anticipo", "transferirles el anticipo", "giro ya mismo", "donde les giro", "consignar el anticipo") {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentPayments,
@@ -754,6 +754,9 @@ var (
 		"chery":         "Chery",
 		"byd":           "BYD",
 		"jac":           "JAC",
+		"tesla":         "Tesla",
+		"porsche":       "Porsche",
+		"volvo":         "Volvo",
 	}
 	knownModels = map[string]string{
 		"hilux":       "Hilux",
