@@ -396,7 +396,8 @@ func RunCLI(ctx context.Context, args []string, stdout io.Writer, stderr io.Writ
 		}
 		snap := metaAdapter.ConfigSnapshot()
 		nowMs := time.Now().UnixMilli()
-		senderID := fmt.Sprintf("comprador-mkt-%d", simWebhookSeq)
+		// Meta Graph API exige IDs puramente numéricos (PSID).
+		senderID := fmt.Sprintf("1000%011d", simWebhookSeq)
 		mid := fmt.Sprintf("mid.sim.%d.%d", nowMs, simWebhookSeq)
 
 		entryMap := map[string]interface{}{
