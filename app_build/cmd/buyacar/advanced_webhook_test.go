@@ -39,7 +39,19 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 					ID string `json:"id"`
 				} `json:"recipient"`
 				Message struct {
-					Text string `json:"text"`
+					Text       string `json:"text"`
+					Attachment struct {
+						Type    string `json:"type"`
+						Payload struct {
+							TemplateType string `json:"template_type"`
+							Text         string `json:"text"`
+							Buttons      []struct {
+								Type  string `json:"type"`
+								URL   string `json:"url"`
+								Title string `json:"title"`
+							} `json:"buttons"`
+						} `json:"payload"`
+					} `json:"attachment"`
 				} `json:"message"`
 				SenderAction string `json:"sender_action"`
 			}
@@ -49,10 +61,14 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 				_, _ = w.Write([]byte(`{"recipient_id":"` + payload.Recipient.ID + `","status":"typing_ack"}`))
 				return
 			}
+			extractedText := payload.Message.Text
+			if extractedText == "" && payload.Message.Attachment.Payload.Text != "" {
+				extractedText = payload.Message.Attachment.Payload.Text
+			}
 			mu.Lock()
 			dispatched = append(dispatched, dispatchedMsg{
 				Recipient: payload.Recipient.ID,
-				Text:      payload.Message.Text,
+				Text:      extractedText,
 			})
 			mu.Unlock()
 			w.WriteHeader(http.StatusOK)

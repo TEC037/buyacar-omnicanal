@@ -323,13 +323,24 @@ func TestRunCLI_AutopilotSandbox_EndToEndWebhookToMetaSendAPI(t *testing.T) {
 					ID string `json:"id"`
 				} `json:"recipient"`
 				Message struct {
-					Text string `json:"text"`
+					Text       string `json:"text"`
+					Attachment struct {
+						Type    string `json:"type"`
+						Payload struct {
+							TemplateType string `json:"template_type"`
+							Text         string `json:"text"`
+						} `json:"payload"`
+					} `json:"attachment"`
 				} `json:"message"`
 			}
 			_ = json.Unmarshal(body, &payload)
+			txt := payload.Message.Text
+			if txt == "" && payload.Message.Attachment.Payload.Text != "" {
+				txt = payload.Message.Attachment.Payload.Text
+			}
 			mu.Lock()
 			sentRecipient = payload.Recipient.ID
-			sentText = payload.Message.Text
+			sentText = txt
 			authHeader = r.Header.Get("Authorization")
 			mu.Unlock()
 			w.WriteHeader(http.StatusOK)

@@ -678,18 +678,44 @@ func (s *MetaSubChannel) Reply(ctx context.Context, session Session, conversatio
 }
 
 // sendViaMetaGraphAPI despacha a Meta Graph API para Messenger o Instagram Direct.
+// Si el mensaje invita a WhatsApp ("315 121 2223") y estamos en Messenger/Instagram,
+// adjunta un Button Template oficial nativo para que el lead pueda tocar el botón
+// "Hablar por WhatsApp" y abrir la conversación inmediatamente.
 func (s *MetaSubChannel) sendViaMetaGraphAPI(ctx context.Context, convID, text string) (SendResult, error) {
 	cfg := s.adapter.ConfigSnapshot()
 	recipientID := strings.TrimPrefix(convID, s.channelID+"-")
 	endpoint := fmt.Sprintf("%s/me/messages", strings.TrimRight(cfg.BaseURL, "/"))
 
+	var messagePayload map[string]interface{}
+	if strings.Contains(text, "315 121 2223") || strings.Contains(text, "3151212223") {
+		// Button Template nativo de Meta (CTA táctil oficial directo a WhatsApp)
+		messagePayload = map[string]interface{}{
+			"attachment": map[string]interface{}{
+				"type": "template",
+				"payload": map[string]interface{}{
+					"template_type": "button",
+					"text":          text,
+					"buttons": []map[string]interface{}{
+						{
+							"type":  "web_url",
+							"url":   "https://wa.me/573151212223",
+							"title": "Hablar por WhatsApp",
+						},
+					},
+				},
+			},
+		}
+	} else {
+		messagePayload = map[string]interface{}{
+			"text": text,
+		}
+	}
+
 	payload := map[string]interface{}{
 		"recipient": map[string]string{
 			"id": recipientID,
 		},
-		"message": map[string]string{
-			"text": text,
-		},
+		"message": messagePayload,
 	}
 
 	bodyBytes, err := json.Marshal(payload)
