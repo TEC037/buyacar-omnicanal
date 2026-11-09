@@ -450,7 +450,7 @@ func Classify(raw string) Classification {
 		}
 	}
 
-	if containsAny(norm, "repuesto", "repuestos", "autopartes", "accesorios", "venden repuestos", "conseguir repuestos") {
+	if containsAny(norm, "repuesto", "repuestos", "autopartes", "accesorios", "venden repuestos", "conseguir repuestos", "pastillas de freno", "amortiguador", "amortiguadores", "bateria", "filtro", "llantas") {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentParts,
@@ -474,7 +474,8 @@ func Classify(raw string) Classification {
 	}
 
 	// 2. Deteccion de causales de escalamiento obligatorio (paso 10 del flujo)
-	if containsAny(norm, discountKeywords...) {
+	if containsAny(norm, discountKeywords...) ||
+		containsAny(norm, "millones en efectivo", "cerramos negocio", "te ofrezco", "le ofrezco", "te doy", "le doy") {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentDiscount,

@@ -41,8 +41,14 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 				Message struct {
 					Text string `json:"text"`
 				} `json:"message"`
+				SenderAction string `json:"sender_action"`
 			}
 			_ = json.Unmarshal(body, &payload)
+			if payload.SenderAction != "" {
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(`{"recipient_id":"` + payload.Recipient.ID + `","status":"typing_ack"}`))
+				return
+			}
 			mu.Lock()
 			dispatched = append(dispatched, dispatchedMsg{
 				Recipient: payload.Recipient.ID,

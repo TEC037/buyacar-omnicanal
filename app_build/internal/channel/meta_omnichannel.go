@@ -646,6 +646,16 @@ func (s *MetaSubChannel) Reply(ctx context.Context, session Session, conversatio
 		}, nil
 
 	case ModeAutopilot:
+		// Emular tiempo de respuesta humano y mostrar "escribiendo..." en Messenger
+		if s.adapter.ConfigSnapshot().AccessToken != "" && !strings.Contains(s.adapter.ConfigSnapshot().BaseURL, "127.0.0.1") {
+			s.sendSenderAction(ctx, conversation.ID, "typing_on")
+			select {
+			case <-time.After(1500 * time.Millisecond):
+			case <-ctx.Done():
+				return SendResult{Status: SendFailed}, ctx.Err()
+			}
+		}
+
 		result, err := s.sendViaMetaGraphAPI(ctx, conversation.ID, message.Text)
 		if err != nil {
 			if s.adapter.tracker != nil {
@@ -714,4 +724,39 @@ func (s *MetaSubChannel) sendViaMetaGraphAPI(ctx context.Context, convID, text s
 		MessageID: fmt.Sprintf("%s-%d", s.channelID, time.Now().UnixNano()),
 		Timestamp: time.Now().UTC(),
 	}, nil
+}
+
+// sendSenderAction envía acciones de estado como "typing_on" o "mark_seen" a Meta Graph API.
+func (s *MetaSubChannel) sendSenderAction(ctx context.Context, convID, action string) {
+	cfg := s.adapter.ConfigSnapshot()
+	if cfg.AccessToken == "" {
+		return
+	}
+	recipientID := strings.TrimPrefix(convID, s.channelID+"-")
+	endpoint := fmt.Sprintf("%s/me/messages", strings.TrimRight(cfg.BaseURL, "/"))
+
+	payload := map[string]interface{}{
+		"recipient": map[string]string{
+			"id": recipientID,
+		},
+		"sender_action": action,
+	}
+
+	bodyBytes, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return
+	}
+	req.Header.Set("Authorization", "Bearer "+cfg.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := cfg.HTTPClient.Do(req)
+	if err != nil {
+		return
+	}
+	_ = resp.Body.Close()
 }
