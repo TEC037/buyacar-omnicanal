@@ -621,7 +621,7 @@ func ClassifyWithContext(raw string, priorTexts []string) Classification {
 	if cl.Intent == IntentLocation || cl.Intent == IntentHours || cl.Intent == IntentCreditGeneral {
 		return cl
 	}
-	if cl.Intent == IntentGreeting && IsCourtesyOnly(cl.NormalizedText) {
+	if cl.Intent == IntentGreeting {
 		return cl
 	}
 

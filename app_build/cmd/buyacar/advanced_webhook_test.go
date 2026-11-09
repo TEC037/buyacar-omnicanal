@@ -106,7 +106,7 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 		text         string
 		wantContains []string
 	}{
-		{"mid.mt.01", "buen día", []string{"BuyaCAR en Tunja · Vehículos certificados", "https://buyacar.com.co"}},
+		{"mid.mt.01", "buen día", []string{"BuyaCAR en Tunja · Vehículos certificados", "315 121 2223"}},
 		{"mid.mt.02", "busco una mazda 3", []string{"Mazda 3 modelo 2021", "$80000000 COP"}},
 		{"mid.mt.03", "¿qué precio tiene?", []string{"Mazda 3 modelo 2021", "Precio: $80000000 COP"}},
 		{"mid.mt.04", "¿y cuántos kilómetros tiene?", []string{"Mazda 3 modelo 2021", "39000 km verificados"}},
@@ -174,7 +174,7 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 			mid:          "mid.ex.03",
 			text:         "Hola, ¿tienen Suzuki Vitara?",
 			expectSent:   true,
-			wantContains: []string{"no tenemos Suzuki Vitara disponible", "https://buyacar.com.co"},
+			wantContains: []string{"no tenemos Suzuki Vitara disponible", "315 121 2223"},
 		},
 		{
 			senderID:     "buyer-retoma-01",

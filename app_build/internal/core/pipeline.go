@@ -734,25 +734,25 @@ func SynthesizeFromRAGChunk(chunk rag.Chunk) string {
 	titleLower := strings.ToLower(strings.TrimSpace(chunk.Title))
 	switch {
 	case strings.Contains(titleLower, "cobertura de garant") || strings.Contains(titleLower, "políticas de garant") || strings.Contains(titleLower, "politicas de garant"):
-		return "En BuyaCAR en Tunja tu vehículo cuenta con garantía certificada:\n\n- Cobertura: 12 meses o 20000 km en motor y caja de cambios\n- Respaldo directo en nuestra red de talleres autorizados\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "En BuyaCAR en Tunja tu vehículo cuenta con garantía certificada:\n\n- Cobertura: 12 meses o 20000 km en motor y caja de cambios\n- Respaldo directo en nuestra red de talleres autorizados\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "exclusiones expresas"):
-		return "Sobre la garantía en BuyaCAR en Tunja:\n\n- Cubre motor y caja (12 meses o 20000 km)\n- No cubre piezas de desgaste normal (frenos, embrague, batería, llantas o suspensión)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "Sobre la garantía en BuyaCAR en Tunja:\n\n- Cubre motor y caja (12 meses o 20000 km)\n- No cubre piezas de desgaste normal (frenos, embrague, batería, llantas o suspensión)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "red de talleres"):
-		return "En BuyaCAR en Tunja contamos con red de talleres autorizados:\n\n- Atención directa en Tunja, Duitama y Sogamoso (Boyacá)\n- Diagnóstico especializado sin costo inicial dentro de cobertura\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "En BuyaCAR en Tunja contamos con red de talleres autorizados:\n\n- Atención directa en Tunja, Duitama y Sogamoso (Boyacá)\n- Diagnóstico especializado sin costo inicial dentro de cobertura\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "proceso de radicac"):
-		return "Para solicitar soporte de garantía en BuyaCAR en Tunja:\n\n- Comunícate por WhatsApp al 315 121 2223 indicando placa y kilometraje\n- Asignamos cita prioritaria en taller autorizado de Tunja\n\nMás información en https://buyacar.com.co"
+		return "Para solicitar soporte de garantía en BuyaCAR en Tunja:\n\n- Comunícate por WhatsApp al 315 121 2223 indicando placa y kilometraje\n- Asignamos cita prioritaria en taller autorizado de Tunja."
 	case strings.Contains(titleLower, "requisitos de crédito para empleados") || strings.Contains(titleLower, "requisitos de credito para empleados"):
-		return "Requisitos de financiación para empleados en BuyaCAR en Tunja:\n\n- Cédula, certificación laboral, extractos (3 meses) y desprendibles\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "Requisitos de financiación para empleados en BuyaCAR en Tunja:\n\n- Cédula, certificación laboral, extractos (3 meses) y desprendibles\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "requisitos para independientes"):
-		return "Requisitos de financiación para independientes en BuyaCAR en Tunja:\n\n- Cédula, RUT/Cámara de Comercio, declaración de renta y extractos (6 meses)\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "Requisitos de financiación para independientes en BuyaCAR en Tunja:\n\n- Cédula, RUT/Cámara de Comercio, declaración de renta y extractos (6 meses)\n- Cuota inicial desde 10% (simulación indicativa sujeta a estudio bancario)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "condiciones financieras") || strings.Contains(titleLower, "bancos aliados") || strings.Contains(titleLower, "política de financiac") || strings.Contains(titleLower, "politica de financiac"):
-		return "En BuyaCAR en Tunja financiamos hasta el 90% del vehículo:\n\n- Bancos aliados: Bancolombia (Sufi), Davivienda, Banco de Bogotá y Finandina\n- Plazos hasta 72 meses (simulación indicativa sujeta a estudio)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "En BuyaCAR en Tunja financiamos hasta el 90% del vehículo:\n\n- Bancos aliados: Bancolombia (Sufi), Davivienda, Banco de Bogotá y Finandina\n- Plazos hasta 72 meses (simulación indicativa sujeta a estudio)\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "peritaje"):
-		return "En BuyaCAR en Tunja todos los vehículos cuentan con peritaje técnico certificado:\n\n- Inspección de 150 puntos (estructura, chasis, motor, caja y antecedentes legales)\n- Garantía de cero siniestros estructurales y tradición 100% asegurable\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "En BuyaCAR en Tunja todos los vehículos cuentan con peritaje técnico certificado:\n\n- Inspección de 150 puntos (estructura, chasis, motor, caja y antecedentes legales)\n- Garantía de cero siniestros estructurales y tradición 100% asegurable\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "traspaso"):
-		return "En BuyaCAR en Tunja nos encargamos de todo el trámite de traspaso:\n\n- Gestión integral ante tránsito libre de comparendos, embargos e impuestos\n- Acompañamiento hasta la tarjeta de propiedad a tu nombre\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "En BuyaCAR en Tunja nos encargamos de todo el trámite de traspaso:\n\n- Gestión integral ante tránsito libre de comparendos, embargos e impuestos\n- Acompañamiento hasta la tarjeta de propiedad a tu nombre\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	case strings.Contains(titleLower, "medios de pago"):
-		return "En BuyaCAR en Tunja aceptamos medios de pago seguros:\n\n- Transferencia bancaria empresarial, cheque de gerencia y desembolso directo de bancos aliados\n- Vitrina: Av. Oriental - Cra. 6 #52-23, Tunja\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co"
+		return "En BuyaCAR en Tunja aceptamos medios de pago seguros:\n\n- Transferencia bancaria empresarial, cheque de gerencia y desembolso directo de bancos aliados\n- Vitrina: Av. Oriental - Cra. 6 #52-23, Tunja\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223."
 	}
 
 	snippet := strings.TrimSpace(strings.ReplaceAll(chunk.Content, "\n", " "))
@@ -767,7 +767,7 @@ func SynthesizeFromRAGChunk(chunk rag.Chunk) string {
 		}
 		snippet = strings.TrimRight(cut, ",;.") + "."
 	}
-	return fmt.Sprintf("BuyaCAR en Tunja (%s):\n\n%s\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 · https://buyacar.com.co", chunk.Title, snippet)
+	return fmt.Sprintf("BuyaCAR en Tunja (%s):\n\n%s\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.", chunk.Title, snippet)
 }
 
 func hasCompoundPolicyQuestion(norm string) bool {

@@ -187,7 +187,7 @@ func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
 		wantContains string
 	}{
 		// 1. Casos reales reportados por el usuario en Messenger/Marketplace con símbolos, espacios dobles y cortos
-		{"Hola Buen día", true, false, "https://buyacar.com.co"},
+		{"Hola Buen día", true, false, "Vehículos certificados"},
 		{"ayuda", true, false, "BuyaCAR en Tunja"},
 		{"tiene una mazda  3?", true, false, "80000000"},
 		{"¿Tienen Mazda 3?", true, false, "80000000"},
@@ -196,15 +196,15 @@ func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
 		{"[masda 3]", true, false, "80000000"},
 
 		// 2. Variaciones ortográficas, saludos informales y solicitudes de asesor/información
-		{"hol", true, false, "https://buyacar.com.co"},
-		{"holaaa buenas", true, false, "https://buyacar.com.co"},
-		{"ola buenendia", true, false, "https://buyacar.com.co"},
-		{"info", true, false, "https://buyacar.com.co"},
-		{"quiero informacion por favor", true, false, "https://buyacar.com.co"},
-		{"me colaboras con un asesor", true, false, "https://buyacar.com.co"},
-		{"catalogo", true, false, "https://buyacar.com.co"},
-		{"inventario", true, false, "https://buyacar.com.co"},
-		{"busco un carro", true, false, "https://buyacar.com.co"},
+		{"hol", true, false, "Vehículos certificados"},
+		{"holaaa buenas", true, false, "Vehículos certificados"},
+		{"ola buenendia", true, false, "Vehículos certificados"},
+		{"info", true, false, "Vehículos certificados"},
+		{"quiero informacion por favor", true, false, "Vehículos certificados"},
+		{"me colaboras con un asesor", true, false, "Vehículos certificados"},
+		{"catalogo", true, false, "Vehículos certificados"},
+		{"inventario", true, false, "Vehículos certificados"},
+		{"busco un carro", true, false, "Vehículos certificados"},
 
 		// 3. Typos fonéticos en marcas y modelos compuestos reales del inventario
 		{"que vale la toyta hailux?", true, false, "185000000"},
@@ -251,7 +251,7 @@ func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
 		{"puedo ir a verlos hoy?", true, false, "Cra. 6 #52-23"},
 		{"muchas gracias", true, false, "Con mucho gusto"},
 		{"ok gracias", true, false, "Con mucho gusto"},
-		{"listo perfecto", true, false, "https://buyacar.com.co"},
+		{"listo perfecto", true, false, "Con mucho gusto"},
 		{"buen da", true, false, "Vehículos certificados"},
 	}
 
@@ -375,8 +375,8 @@ func TestKaizenPerfection_ColombianMarketAndEscalationHandoffs(t *testing.T) {
 			t.Fatalf("query %q: expected vehicle_not_found_in_inventory, got %+v (query=%+v)", tc.query, res, cl.ExtractedQuery)
 		}
 		handoff, _ := BuildEscalationHandoffReply(ctx, res.EscalationReason, cl, cache, now)
-		if !strings.Contains(handoff, tc.wantMissing) || !strings.Contains(handoff, "https://buyacar.com.co") {
-			t.Fatalf("query %q: expected %q in handoff, got %q", tc.query, tc.wantMissing, handoff)
+		if !strings.Contains(handoff, tc.wantMissing) || !strings.Contains(handoff, "315 121 2223") {
+			t.Fatalf("query %q: expected %q and WhatsApp 315 121 2223 in handoff, got %q", tc.query, tc.wantMissing, handoff)
 		}
 	}
 
