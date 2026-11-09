@@ -137,7 +137,8 @@ func (g *Guard) ValidateOutboxWithBackedNumbers(reply string, channelID string, 
 	// 2. Verificar URLs: solo HTTPS y en allowlist
 	urls := reURL.FindAllString(trimmed, -1)
 	for _, rawURL := range urls {
-		parsed, err := url.Parse(rawURL)
+		cleanURL := strings.TrimRight(rawURL, ".,;:!?")
+		parsed, err := url.Parse(cleanURL)
 		if err != nil || parsed.Scheme != "https" {
 			return ValidationResult{
 				Approved:        false,

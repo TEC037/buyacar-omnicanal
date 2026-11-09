@@ -50,7 +50,7 @@ func buildMarketplaceTournamentCorpus() []tournamentCase {
 		{"RAG_Credit_Banks", []string{"¿Con qué bancos aliados manejan financiamiento y cuota inicial?"}, false, "Bancolombia"},
 		{"RAG_FAQ_Peritaje", []string{"¿Qué puntos revisan en el peritaje técnico certificado?"}, false, "150 puntos"},
 		{"RAG_FAQ_Traspaso", []string{"¿Cómo es el trámite de traspaso ante tránsito en Boyacá?"}, false, "traspaso"},
-		{"RAG_Warranty_Workshops", []string{"¿Cuáles son los talleres autorizados de garantía en Tunja y Duitama?"}, false, "3151212223"},
+		{"RAG_Warranty_Workshops", []string{"¿Cuáles son los talleres autorizados de garantía en Tunja y Duitama?"}, false, "315 121 2223"},
 
 		// Grupo 4: Consultas compuestas de Marketplace (Vehículo + Política RAG en un solo mensaje) (4 casos)
 		{"Compound_Hilux_Warranty", []string{"¿Qué precio tiene la Toyota Hilux 2022 y qué garantía tiene en motor y caja?"}, false, "20000 km"},
@@ -94,7 +94,7 @@ func runTournamentStrategy(t *testing.T, strategy string, llmAvailable bool) tou
 	var aiProv ai.Provider
 	if llmAvailable {
 		defaultValid := makeAIResponseJSON(
-			"En BuyaCAR Tunja contamos con garantía de 12 meses o 20000 km, Certificación laboral, crédito desde 10% con Bancolombia, peritaje de 150 puntos y traspaso ágil. WhatsApp 3151212223. https://buyacar.com.co",
+			"En BuyaCAR Tunja contamos con garantía de 12 meses o 20000 km, Certificación laboral, crédito desde 10% con Bancolombia, peritaje de 150 puntos y traspaso ágil. WhatsApp 315 121 2223. https://buyacar.com.co",
 			"complex_query", false, "",
 		)
 		aiProv = newGoldenMockAIProvider(defaultValid)

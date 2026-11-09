@@ -110,9 +110,9 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 		{"mid.mt.02", "busco una mazda 3", []string{"Mazda 3 modelo 2021", "$80000000 COP"}},
 		{"mid.mt.03", "¿qué precio tiene?", []string{"Mazda 3 modelo 2021", "Precio: $80000000 COP"}},
 		{"mid.mt.04", "¿y cuántos kilómetros tiene?", []string{"Mazda 3 modelo 2021", "39000 km verificados"}},
-		{"mid.mt.05", "¿qué garantía dan en motor y caja?", []string{"12 meses o 20000 km", "3151212223"}},
+		{"mid.mt.05", "¿qué garantía dan en motor y caja?", []string{"12 meses o 20000 km", "315 121 2223"}},
 		{"mid.mt.06", "mi celular es 3104567890", []string{"Mazda 3 modelo 2021", "prueba de ruta"}},
-		{"mid.mt.07", "muchas gracias", []string{"¡Con mucho gusto!", "3151212223"}},
+		{"mid.mt.07", "muchas gracias", []string{"¡Con mucho gusto!", "315 121 2223"}},
 	}
 
 	for idx, st := range multiTurnSteps {
@@ -181,7 +181,7 @@ func TestAdvancedOmnichannel_MultiTurnSignedWebhook_AutopilotEndToEnd(t *testing
 			mid:          "mid.ex.04",
 			text:         "¿Reciben mi carro en parte de pago?",
 			expectSent:   true,
-			wantContains: []string{"parte de pago", "3151212223"},
+			wantContains: []string{"parte de pago", "315 121 2223"},
 		},
 		{
 			senderID:     "buyer-postback-01",

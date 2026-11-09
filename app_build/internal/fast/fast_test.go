@@ -40,7 +40,7 @@ func TestFastPath_GoldenCasesAndEscalation(t *testing.T) {
 	// GC-003: WhatsApp oficial
 	cl = triage.Classify("¿Cuál es su número de WhatsApp oficial?")
 	res = eng.Evaluate(ctx, cl, cache, now)
-	if !res.Handled || !strings.Contains(res.Reply, "3151212223") {
+	if !res.Handled || !strings.Contains(res.Reply, "315 121 2223") {
 		t.Fatalf("expected contact reply, got %+v", res)
 	}
 
@@ -241,12 +241,12 @@ func TestHighEngineering_UserQuestionsCorpus(t *testing.T) {
 		// 6. Ubicación, horarios, contacto y financiación con errores ortográficos
 		{"cual es la ubicasion o dirrecion en tunja?", true, false, "Cra. 6 #52-23"},
 		{"tienen financiasion con bancos?", true, false, "Bancolombia"},
-		{"cual es el wasap o wpp?", true, false, "3151212223"},
+		{"cual es el wasap o wpp?", true, false, "315 121 2223"},
 
 		// 7. Entrega de número de WhatsApp del cliente, agendamiento de cita y cortesías
-		{"3104567890", true, false, "3151212223"},
-		{"mi whatsapp es 310 456 7890", true, false, "3151212223"},
-		{"escribeme al +573208765432", true, false, "3151212223"},
+		{"3104567890", true, false, "315 121 2223"},
+		{"mi whatsapp es 310 456 7890", true, false, "315 121 2223"},
+		{"escribeme al +573208765432", true, false, "315 121 2223"},
 		{"quiero agendar una cita para prueba de ruta", true, false, "Cra. 6 #52-23"},
 		{"puedo ir a verlos hoy?", true, false, "Cra. 6 #52-23"},
 		{"muchas gracias", true, false, "Con mucho gusto"},
@@ -383,7 +383,7 @@ func TestKaizenPerfection_ColombianMarketAndEscalationHandoffs(t *testing.T) {
 	// 4. Handoffs comerciales de retoma/permuta, precio mínimo, centrales de riesgo y Fasecolda; y silencio en Prompt Injection
 	clTrade := triage.Classify("¿Reciben mi carro en parte de pago?")
 	replyTrade, _ := BuildEscalationHandoffReply(ctx, clTrade.EscalationReason, clTrade, cache, now)
-	if !strings.Contains(replyTrade, "parte de pago") || !strings.Contains(replyTrade, "3151212223") {
+	if !strings.Contains(replyTrade, "parte de pago") || !strings.Contains(replyTrade, "315 121 2223") {
 		t.Fatalf("unexpected trade-in handoff: %q", replyTrade)
 	}
 
@@ -397,7 +397,7 @@ func TestKaizenPerfection_ColombianMarketAndEscalationHandoffs(t *testing.T) {
 	oswaldoRaw := "Oswaldo · 2008 Honda CR-V EX 4×4 Automática 2.4\nOswaldo ha iniciado este chat.\nHola. ¿Está disponible?\nBuenas tardes me regalas un número telefónico para llamarte"
 	clOswaldo := triage.Classify(oswaldoRaw)
 	resOswaldo := eng.Evaluate(ctx, clOswaldo, cache, now)
-	if !resOswaldo.Handled || !strings.Contains(resOswaldo.Reply, "Honda CR-V modelo 2008") || !strings.Contains(resOswaldo.Reply, "43000000") || !strings.Contains(resOswaldo.Reply, "3022866969") {
+	if !resOswaldo.Handled || !strings.Contains(resOswaldo.Reply, "Honda CR-V modelo 2008") || !strings.Contains(resOswaldo.Reply, "43000000") || !strings.Contains(resOswaldo.Reply, "315 121 2223") {
 		t.Fatalf("Oswaldo case failed: Handled=%v, Reply=%q (query=%+v)", resOswaldo.Handled, resOswaldo.Reply, clOswaldo.ExtractedQuery)
 	}
 

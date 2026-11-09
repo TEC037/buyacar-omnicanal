@@ -205,7 +205,7 @@ func TestRunCLI_MarketplaceCopilotEndpoint_M2(t *testing.T) {
 	}
 	rawEsc, _ := io.ReadAll(respEsc.Body)
 	respEsc.Body.Close()
-	if !strings.Contains(string(rawEsc), `"escalated":true`) || !strings.Contains(string(rawEsc), "3151212223") {
+	if !strings.Contains(string(rawEsc), `"escalated":true`) || !strings.Contains(string(rawEsc), "315 121 2223") {
 		t.Fatalf("expected discount query to escalate with commercial handoff, got: %s", string(rawEsc))
 	}
 
