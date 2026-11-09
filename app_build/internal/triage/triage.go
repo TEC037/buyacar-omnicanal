@@ -33,17 +33,27 @@ const (
 	IntentPromptInject Intent = "prompt_injection"
 	IntentSensitivePII Intent = "sensitive_pii"
 	IntentComplexQuery Intent = "complex_query"
+
+	// Nuevas intenciones del ciclo de vida automotriz integral (DAG)
+	IntentAfterSales   Intent = "after_sales_service"    // Mantenimiento y posventa
+	IntentParts        Intent = "parts_and_accessories"  // Repuestos y accesorios
+	IntentPayments     Intent = "payments_and_reserves"  // Reservas, señas y cuentas oficiales
+	IntentDocsLegal    Intent = "docs_and_transfers"     // Traspasos, impuestos y certificados
+	IntentUniversal    Intent = "universal_fallback"     // Fallback guiado estructurado
 )
 
 // Classification contiene el resultado determinista del triage.
 type Classification struct {
 	NormalizedText   string
 	Intent           Intent
+	Intents          []Intent
 	Confidence       float64
 	IsEasy           bool
 	MustEscalate     bool
 	EscalationReason string
 	ExtractedQuery   inventory.Query
+	HasPIIOther      bool
+	HasPIIOwn        bool
 }
 
 var normReplacer = strings.NewReplacer(
@@ -405,10 +415,60 @@ func Classify(raw string) Classification {
 		return Classification{
 			NormalizedText:   norm,
 			Intent:           IntentPromptInject,
+			Intents:          []Intent{IntentPromptInject},
 			Confidence:       0.99,
 			IsEasy:           false,
 			MustEscalate:     true,
 			EscalationReason: "prompt_injection_detected",
+			ExtractedQuery:   q,
+		}
+	}
+
+	// 1.1 Detección de solicitud de PII de terceros (Dueño anterior, cédula, peritaje privado)
+	if containsAny(norm, "cedula del dueno", "cedula del propietario", "quien era el dueno", "datos del dueno", "telefono del dueno", "nombre del dueno", "quien lo vendio") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentSensitivePII,
+			Intents:          []Intent{IntentSensitivePII},
+			Confidence:       0.99,
+			IsEasy:           true,
+			MustEscalate:     false,
+			HasPIIOther:      true,
+			ExtractedQuery:   q,
+		}
+	}
+
+	// 1.2 Detección de Posventa, Mantenimiento y Repuestos
+	if containsAny(norm, "posventa", "mantenimiento", "cambio de aceite", "taller para revision", "revision tecnica de mi carro", "servicio de taller") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentAfterSales,
+			Intents:          []Intent{IntentAfterSales},
+			Confidence:       0.95,
+			IsEasy:           true,
+			ExtractedQuery:   q,
+		}
+	}
+
+	if containsAny(norm, "repuesto", "repuestos", "autopartes", "accesorios", "venden repuestos", "conseguir repuestos") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentParts,
+			Intents:          []Intent{IntentParts},
+			Confidence:       0.95,
+			IsEasy:           true,
+			ExtractedQuery:   q,
+		}
+	}
+
+	// 1.3 Detección de Pagos, Señas y Cuentas Bancarias
+	if containsAny(norm, "donde consigno", "cuenta bancaria", "como pago", "separar el carro", "hacer la sena", "abono inicial", "a que cuenta consigno", "numero de cuenta") {
+		return Classification{
+			NormalizedText:   norm,
+			Intent:           IntentPayments,
+			Intents:          []Intent{IntentPayments},
+			Confidence:       0.95,
+			IsEasy:           true,
 			ExtractedQuery:   q,
 		}
 	}
@@ -598,6 +658,18 @@ func Classify(raw string) Classification {
 			Intent:         IntentGreeting,
 			Confidence:     0.95,
 			IsEasy:         true,
+		}
+	}
+
+	// 6. Detección de mensajes ambiguos, ruido o sin coincidencia -> Fallback Guiado Universal
+	if len(strings.TrimSpace(norm)) > 0 && q.Brand == "" && q.Model == "" && !containsAny(norm, policyExcludeKeywords...) {
+		return Classification{
+			NormalizedText: norm,
+			Intent:         IntentUniversal,
+			Intents:        []Intent{IntentUniversal},
+			Confidence:     0.90,
+			IsEasy:         true,
+			ExtractedQuery: q,
 		}
 	}
 

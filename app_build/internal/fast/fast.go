@@ -19,6 +19,12 @@ type BusinessTexts struct {
 	SoldVehicleNotice  string
 	CreditGeneralReply string
 	CategorySUVReply   string
+	UniversalFallback  string
+	AfterSalesReply    string
+	PartsReply         string
+	PaymentsReply      string
+	PIIOtherReply      string
+	PromptInjectReply  string
 }
 
 func DefaultBusinessTexts() BusinessTexts {
@@ -30,6 +36,12 @@ func DefaultBusinessTexts() BusinessTexts {
 		SoldVehicleNotice: "Te informamos que este vehículo ya fue vendido/separado en nuestra vitrina de Tunja.\n\nUn asesor humano te compartirá alternativas similares certificadas. Te invitamos a comunicarte por WhatsApp al 315 121 2223.",
 		CreditGeneralReply: "En BuyaCAR en Tunja te ayudamos con financiación vehicular:\n\n- Convenios con bancos aliados (Bancolombia, Davivienda, Finandina)\n- Planes de cuota inicial desde el 10%-20% y simulación indicativa según perfil\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
 		CategorySUVReply: "¡Hola! En BuyaCAR en Tunja contamos con camionetas y SUVs certificadas:\n\n- Toyota Hilux 4x4 y Fortuner\n- Mazda CX-5 y Mazda CX-30\n- Chevrolet Tracker y Captiva\n- Renault Duster y Nissan Qashqai\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para enviarte fotos y precios.",
+		UniversalFallback: "¡Hola! En BuyaCAR en Tunja estamos para servirte. Para orientarte mejor, ¿deseas información sobre:\n\n1. Compra de vehículos certificados\n2. Financiación y créditos\n3. Retoma de tu usado\n4. Garantías y talleres autorizados\n5. Hablar con un asesor comercial?\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
+		AfterSalesReply: "¡Hola! Para servicios de posventa, mantenimiento y garantías en BuyaCAR:\n\n- Red de talleres autorizados en Tunja, Duitama y Sogamoso\n- Agendamiento técnico directo para clientes certificados\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para coordinar tu cita de taller.",
+		PartsReply: "¡Hola! En BuyaCAR en Tunja te orientamos sobre repuestos y accesorios:\n\n- Asesoría con distribuidores autorizados de cada marca\n- Respaldo en repuestos originales para unidades certificadas\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
+		PaymentsReply: "¡Hola! Por tu seguridad, en BuyaCAR SAS BIC únicamente recibimos pagos en nuestras cuentas bancarias empresariales oficiales o directamente en vitrina (Av. Oriental - Cra. 6 #52-23, Tunja).\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223 para validar cualquier consignación.",
+		PIIOtherReply: "¡Hola! Por políticas de protección de datos personales (Ley 1581), en BuyaCAR no compartimos información privada de propietarios anteriores. Toda la tradición legal y peritaje de 150 puntos se verifica directamente en nuestra vitrina en Tunja.\n\nTe invitamos a comunicarte por WhatsApp al 315 121 2223.",
+		PromptInjectReply: "¡Hola! En BuyaCAR en Tunja nos especializamos exclusivamente en asesoría y venta de vehículos certificados.\n\n¿Te interesa conocer nuestro catálogo de camionetas y automóviles disponibles, o coordinar una prueba de ruta? Te invitamos a comunicarte por WhatsApp al 315 121 2223.",
 	}
 }
 
@@ -127,6 +139,36 @@ func (e *Engine) Evaluate(ctx context.Context, cl triage.Classification, cache *
 		return Result{
 			Handled:         true,
 			Reply:           e.formatCategoryReply(cl.NormalizedText),
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
+	case triage.IntentAfterSales:
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.AfterSalesReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
+	case triage.IntentParts:
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.PartsReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
+	case triage.IntentPayments:
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.PaymentsReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
+	case triage.IntentSensitivePII:
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.PIIOtherReply,
+			InventoryStatus: inventory.StatusVehicleNotRequired,
+		}
+	case triage.IntentUniversal:
+		return Result{
+			Handled:         true,
+			Reply:           e.texts.UniversalFallback,
 			InventoryStatus: inventory.StatusVehicleNotRequired,
 		}
 	}
@@ -261,6 +303,12 @@ func BuildEscalationHandoffReply(ctx context.Context, reason string, cl triage.C
 	switch reason {
 	case "prompt_injection_detected":
 		return "", nil
+
+	case "sensitive_pii_other_requested":
+		return DefaultBusinessTexts().PIIOtherReply, nil
+
+	case "universal_fallback_needed":
+		return DefaultBusinessTexts().UniversalFallback, nil
 
 	case "multiple_matches_disambiguation_required":
 		if cache != nil {
