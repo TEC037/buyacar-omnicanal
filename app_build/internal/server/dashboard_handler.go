@@ -329,6 +329,8 @@ func (dh *DashboardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		dh.handleGeminiConfig(w, r)
 	case path == "/api/n8n/webhook":
 		dh.handleN8NWebhook(w, r)
+	case path == "/webhooks/whatsapp" || path == "/api/whatsapp/evolution":
+		dh.handleEvolutionWebhook(w, r)
 	case path == "/api/crm/leads":
 		dh.handleCRMLeads(w, r)
 	case path == "/api/crm/lead/decision":
@@ -1052,4 +1054,123 @@ func (dh *DashboardHandler) handleN8NWebhook(w http.ResponseWriter, r *http.Requ
 
 	http.Error(w, "n8n webhook handler not configured", http.StatusNotImplemented)
 }
+
+// EvolutionWebhookPayload mapea los eventos estándar de Evolution API (MESSAGES_UPSERT).
+type EvolutionWebhookPayload struct {
+	Event    string `json:"event"`
+	Instance string `json:"instance"`
+	Data     struct {
+		Key struct {
+			RemoteJid string `json:"remoteJid"`
+			FromMe    bool   `json:"fromMe"`
+			ID        string `json:"id"`
+		} `json:"key"`
+		PushName    string `json:"pushName"`
+		Message     map[string]interface{} `json:"message"`
+		MessageType string `json:"messageType"`
+	} `json:"data"`
+}
+
+func (dh *DashboardHandler) handleEvolutionWebhook(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	bodyBytes, err := io.ReadAll(io.LimitReader(r.Body, 128*1024))
+	if err != nil {
+		http.Error(w, "read error", http.StatusBadRequest)
+		return
+	}
+
+	var evo EvPayloadWrapper
+	_ = json.Unmarshal(bodyBytes, &evo)
+
+	// Extraer texto del mensaje de Evolution API
+	inboundText := evo.extractText()
+	sender := evo.Data.Key.RemoteJid
+	fromMe := evo.Data.Key.FromMe
+
+	// Ignorar mensajes enviados por nosotros mismos o vacíos
+	if fromMe || strings.TrimSpace(inboundText) == "" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"status":"ignored_or_empty"}`))
+		return
+	}
+
+	// Normalizar número telefónico
+	cleanPhone := strings.Split(sender, "@")[0]
+
+	dh.mu.RLock()
+	copilotFn := dh.onCopilotDraft
+	opMode := dh.operatingMode
+	dh.mu.RUnlock()
+
+	if copilotFn != nil {
+		alias := evo.Data.PushName
+		if alias == "" {
+			alias = cleanPhone
+		}
+		cp, err := copilotFn(r.Context(), CopilotRequest{
+			ChannelID:     "whatsapp_evolution",
+			CustomerAlias: alias,
+			Message:       inboundText,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":         "processed",
+			"operating_mode": opMode,
+			"sender":         cleanPhone,
+			"incoming_text":  inboundText,
+			"reply_text":     cp.ProposedReply,
+			"escalated":      cp.Escalated,
+			"intent":         cp.Intent,
+		})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"status":"received"}`))
+}
+
+type EvPayloadWrapper struct {
+	Event string `json:"event"`
+	Data  struct {
+		Key struct {
+			RemoteJid string `json:"remoteJid"`
+			FromMe    bool   `json:"fromMe"`
+			ID        string `json:"id"`
+		} `json:"key"`
+		PushName string                 `json:"pushName"`
+		Message  map[string]interface{} `json:"message"`
+	} `json:"data"`
+	// Soporte para formato plano o directo
+	Message string `json:"message_text"`
+}
+
+func (e *EvPayloadWrapper) extractText() string {
+	if e.Message != "" {
+		return e.Message
+	}
+	if e.Data.Message != nil {
+		if conv, ok := e.Data.Message["conversation"].(string); ok && conv != "" {
+			return conv
+		}
+		if ext, ok := e.Data.Message["extendedTextMessage"].(map[string]interface{}); ok {
+			if text, ok := ext["text"].(string); ok {
+				return text
+			}
+		}
+	}
+	return ""
+}
+
 
