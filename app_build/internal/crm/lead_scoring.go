@@ -52,6 +52,12 @@ type LeadProfile struct {
 	HasTradeIn       bool        `json:"has_trade_in"`
 	AppointmentTime  *time.Time  `json:"appointment_time,omitempty"`
 	AppointmentSede  string      `json:"appointment_sede,omitempty"`
+	AssignedAdvisor  string      `json:"assigned_advisor,omitempty"`
+	RiskLevel        string      `json:"risk_level,omitempty"` // low, medium, high
+	ConsentGiven     bool        `json:"consent_given"`
+	OptOut           bool        `json:"opt_out"`
+	PendingData      []string    `json:"pending_data,omitempty"`
+	ConfirmedData    []string    `json:"confirmed_data,omitempty"`
 	InteractionCount int         `json:"interaction_count"`
 	LastInteraction  time.Time   `json:"last_interaction"`
 	Notes            []string    `json:"notes,omitempty"`
