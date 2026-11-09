@@ -294,6 +294,8 @@ var (
 	}
 	locationKeywords = []string{
 		"donde quedan", "ubicados", "ubicacion", "direccion", "como llego", "vitrina", "en que parte quedan", "donde estan", "frente a la toyota",
+		"donde conseguiste", "donde lo conseguiste", "donde consiguen", "donde los consigo", "donde lo consigo", "donde los tienen",
+		"donde encuentro", "donde los encuentro", "donde los puedo encontrar", "donde visitarlos", "donde ir",
 	}
 	hoursKeywords = []string{
 		"horario", "que hora abren", "a que hora cierran", "sabado", "domingo", "atencion", "abiertos",
